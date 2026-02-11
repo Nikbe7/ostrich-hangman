@@ -1,7 +1,7 @@
 services:
   - type: web
     name: ostrich-hangman-backend
-    env: node
+    runtime: node
     root: backend
     plan: free
     buildCommand: npm install
