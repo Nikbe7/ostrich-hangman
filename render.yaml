@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: ostrich-hangman-backend
+    env: node
+    root: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
