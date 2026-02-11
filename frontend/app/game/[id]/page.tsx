@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useSocket } from '../../hooks/useSocket';
-import { getSessionId, getPlayerName, setPlayerName } from '../../utils/session';
-import PlayerList from '../../components/PlayerList';
-import WordDisplay from '../../components/WordDisplay';
-import Keyboard from '../../components/Keyboard';
-import Hangman from '../../components/Hangman';
+import { useSocket } from '@/hooks/useSocket';
+import { getSessionId, getPlayerName, setPlayerName } from '@/utils/session';
+import PlayerList from '@/components/PlayerList';
+import WordDisplay from '@/components/WordDisplay';
+import Keyboard from '@/components/Keyboard';
+import Hangman from '@/components/Hangman';
 
 // Types (should remain consistent with backend)
 interface Player {
