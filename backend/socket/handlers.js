@@ -1,4 +1,4 @@
-const Game = require('../models/Game');
+const db = require('../db');
 const { isValidWord } = require('../services/wordValidation');
 
 module.exports = (io) => {
@@ -10,45 +10,28 @@ module.exports = (io) => {
         // JOIN GAME
         socket.on('join_game', async ({ gameId, sessionId, playerName }) => {
             try {
-                let game = await Game.findOne({ gameId });
+                // Determine name
+                const name = playerName || `Player ${socket.id.substr(0, 4)}`;
+
+                // Check if game exists
+                let game = await db.getGame(gameId);
 
                 if (!game) {
-                    // Create new game if it doesn't exist
-                    // Initial word is random from list (handled in Game creation logic or explicitly here)
-                    game = new Game({
-                        gameId,
-                        word: 'hangman', // Placeholder, will be set by first chooser or random
-                        wordChooser: sessionId, // Creator is first chooser? Or logic to pick.
-                        status: 'waiting',
-                        players: []
-                    });
-                    console.log(`Created new game: ${gameId}`);
+                    // Create new game
+                    console.log(`Creating new game: ${gameId}`);
+                    // Initial creation only creates the game row
+                    await db.createGame(gameId, sessionId);
                 }
 
-                // Find or create player in the game
-                let player = game.players.find(p => p.sessionId === sessionId);
-                if (player) {
-                    player.isOnline = true;
-                    player.lastSeen = new Date();
-                    // Update semantic name if changed (optional)
-                    if (playerName) player.name = playerName;
-                } else {
-                    // New player
-                    game.players.push({
-                        sessionId,
-                        name: playerName || `Player ${game.players.length + 1}`,
-                        isOnline: true,
-                        lastSeen: new Date(),
-                        score: 0
-                    });
-                }
+                // Add/Update player in the game
+                await db.joinGame(gameId, sessionId, name);
 
-                // Check if we need to set a word chooser (if none exists or previous left)
-                if (!game.wordChooser && game.players.length > 0) {
-                    game.wordChooser = game.players[0].sessionId;
-                }
+                // Fetch latest state to emit
+                game = await db.getGame(gameId);
 
-                await game.save();
+                // Store session info in socket for disconnect handling
+                socket.data.sessionId = sessionId;
+                socket.data.gameId = gameId;
 
                 socket.join(gameId);
 
@@ -67,7 +50,7 @@ module.exports = (io) => {
         // SUBMIT WORD
         socket.on('submit_word', async ({ gameId, word, sessionId }) => {
             try {
-                const game = await Game.findOne({ gameId });
+                const game = await db.getGame(gameId);
                 if (!game) return;
 
                 // Verify it's this player's turn to choose
@@ -82,100 +65,89 @@ module.exports = (io) => {
                 }
 
                 // Reset game state for new round
-                game.word = word.toLowerCase();
-                game.guessedLetters = [];
-                game.wrongGuesses = 0;
-                game.status = 'playing';
+                await db.updateGame(gameId, {
+                    word: word.toLowerCase(),
+                    guessedLetters: [], // db appends? no, we need to reset. updateGame should handle replace. 
+                    // In db.js I implemented updateGame to update columns. 
+                    // Postgres.js handles array to jsonb conversion.
+                    // But wait, my db.js uses `guessed_letters = updates.guessedLetters`.
+                    // If I pass [], it should work.
+                    wrongGuesses: 0,
+                    status: 'playing'
+                });
 
-                await game.save();
-
-                // Obscure word for clients? No, send full game state but frontend handles display
-                // basic security: don't send `word` to clients? 
-                // For simplicity, we send it, but frontend hides it. 
-                // To be secure, we should scrub `word` from the object sent to guessers.
-                // We'll handle scrubbing in the emit logic if we had a transformer. 
-                // For now, assume friends won't inspect network traffic.
-
-                gameNamespace.to(gameId).emit('update_game', game);
+                const updatedGame = await db.getGame(gameId);
+                gameNamespace.to(gameId).emit('update_game', updatedGame);
 
             } catch (err) {
-                console.error(err);
+                console.error("Error submitting word:", err);
             }
         });
 
         // GUESS LETTER
         socket.on('guess_letter', async ({ gameId, letter, sessionId }) => {
             try {
-                const game = await Game.findOne({ gameId });
+                let game = await db.getGame(gameId);
                 if (!game || game.status !== 'playing') return;
 
                 // Normalize
                 const guess = letter.toLowerCase();
                 if (game.guessedLetters.includes(guess)) return;
 
-                game.guessedLetters.push(guess);
+                // Update guessed letters
+                const newGuessedLetters = [...game.guessedLetters, guess];
+                let newWrongGuesses = game.wrongGuesses;
 
                 if (!game.word.includes(guess)) {
-                    game.wrongGuesses += 1;
+                    newWrongGuesses += 1;
                 }
 
-                // Check Win Condition
-                const isWin = game.word.split('').every(char => game.guessedLetters.includes(char));
-                if (isWin) {
-                    game.status = 'finished';
-                    // Add to history
-                    game.history.push({
-                        word: game.word,
-                        winner: sessionId,
-                        timestamp: new Date()
-                    });
+                const updates = {
+                    guessedLetters: newGuessedLetters,
+                    wrongGuesses: newWrongGuesses
+                };
 
-                    // Winner becomes next chooser
-                    game.wordChooser = sessionId;
-                    game.currentTurn = sessionId; // Redundant maybe
+                // Check Win Condition
+                const isWin = game.word.split('').every(char => newGuessedLetters.includes(char));
+                if (isWin) {
+                    updates.status = 'finished';
+                    updates.wordChooser = sessionId; // Winner chooses next
+
+                    // Add to history
+                    await db.addHistory(gameId, game.word, sessionId);
                 }
 
                 // Check Loss Condition (e.g. 10 wrong guesses)
-                if (game.wrongGuesses >= 10 && !isWin) {
-                    game.status = 'finished';
-                    // Previous chooser stays chooser? Or pass to next?
-                    // Let's pass to next player in list for variety
+                if (newWrongGuesses >= 10 && !isWin) {
+                    updates.status = 'finished';
+
+                    // Pass turn to next player
                     const currentIndex = game.players.findIndex(p => p.sessionId === game.wordChooser);
                     const nextIndex = (currentIndex + 1) % game.players.length;
-                    game.wordChooser = game.players[nextIndex].sessionId;
+                    updates.wordChooser = game.players[nextIndex].sessionId;
                 }
 
-                await game.save();
-                gameNamespace.to(gameId).emit('update_game', game);
+                await db.updateGame(gameId, updates);
+
+                const updatedGame = await db.getGame(gameId);
+                gameNamespace.to(gameId).emit('update_game', updatedGame);
 
             } catch (err) {
-                console.error(err);
+                console.error("Error guessing letter:", err);
             }
         });
 
         // RESET GAME
         socket.on('reset_game', async ({ gameId, sessionId }) => {
             try {
-                const game = await Game.findOne({ gameId });
-                if (!game) return;
+                await db.resetGame(gameId, sessionId);
 
-                // Any player can reset? Or "Warning" confirmation handled on frontend.
-                // Backend just executes.
-
-                game.word = '';
-                game.guessedLetters = [];
-                game.wrongGuesses = 0;
-                game.status = 'waiting';
-
-                // Player who reset gets to choose next word (as per requirements)
-                game.wordChooser = sessionId;
-
-                await game.save();
+                const game = await db.getGame(gameId);
                 gameNamespace.to(gameId).emit('update_game', game);
                 gameNamespace.to(gameId).emit('notification', `Game reset by player.`);
 
             } catch (err) {
-                console.error(err);
+                console.error("Error resetting game:", err);
             }
         });
 
@@ -184,16 +156,14 @@ module.exports = (io) => {
             try {
                 const { sessionId, gameId } = socket.data;
                 if (sessionId && gameId) {
-                    const game = await Game.findOne({ gameId });
+                    await db.updatePlayerStatus(sessionId, false); // isOnline = false
+
+                    // Notify others
+                    // Fetch generic game state just to get players list updated?
+                    // Ideally we just emit 'player_update'. but 'update_game' is full state sync which is fine.
+                    const game = await db.getGame(gameId);
                     if (game) {
-                        const player = game.players.find(p => p.sessionId === sessionId);
-                        if (player) {
-                            player.isOnline = false;
-                            player.lastSeen = new Date();
-                            await game.save();
-                            // Notify others
-                            gameNamespace.to(gameId).emit('update_game', game);
-                        }
+                        gameNamespace.to(gameId).emit('update_game', game);
                     }
                 }
             } catch (err) {
