@@ -7,7 +7,9 @@ services:
     buildCommand: npm install
     startCommand: node server.js
     envVars:
-      - key: MONGO_URI
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
         sync: false
       - key: FRONTEND_URL
         sync: false

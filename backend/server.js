@@ -28,6 +28,11 @@ app.get('/', (req, res) => {
   res.send('Ostrich Hangman Backend is running');
 });
 
+// Health check for UptimeRobot
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 // Socket.io Logic
 // Import handlers
 require('./socket/handlers')(io);
