@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+python-socketio
+supabase
+python-dotenv
+websockets
+
+# Testing
+pytest
+pytest-asyncio
+httpx

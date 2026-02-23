@@ -12,7 +12,7 @@ const Keyboard: React.FC<KeyboardProps> = ({ guessedLetters, onGuess, disabled }
     return (
         <div className="grid grid-cols-7 gap-2 max-w-lg mx-auto">
             {ALPHABET.map((letter) => {
-                const isGuessed = guessedLetters.includes(letter);
+                const isGuessed = guessedLetters.includes(letter.toUpperCase());
                 return (
                     <button
                         key={letter}

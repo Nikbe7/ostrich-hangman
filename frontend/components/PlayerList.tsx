@@ -11,9 +11,10 @@ interface Player {
 interface PlayerListProps {
     players: Player[];
     currentPlayerId: string;
+    wordChooser?: string;
 }
 
-const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayerId }) => {
+const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayerId, wordChooser }) => {
     const formatLastSeen = (dateStr: string) => {
         const diff = Date.now() - new Date(dateStr).getTime();
         const mins = Math.floor(diff / 60000);
@@ -25,11 +26,12 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayerId }) => 
         <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm">
             <h3 className="text-xl font-bold mb-4 text-white">Spelare</h3>
             <ul className="space-y-2">
-                {players.map((p) => (
-                    <li key={p.sessionId} className="flex items-center justify-between p-2 rounded bg-black/20">
+                {players.map((p, i) => (
+                    <li key={`${p.sessionId}-${i}`} className="flex items-center justify-between p-2 rounded bg-black/20">
                         <div className="flex items-center gap-2">
                             <div className={`w-3 h-3 rounded-full ${p.isOnline ? 'bg-green-500' : 'bg-gray-500'}`} />
                             <span className={`font-medium ${p.sessionId === currentPlayerId ? 'text-yellow-300' : 'text-white'}`}>
+                                {p.sessionId === wordChooser && '👑 '}
                                 {p.name} {p.sessionId === currentPlayerId && '(Du)'}
                             </span>
                         </div>

@@ -13,7 +13,10 @@ const WordDisplay: React.FC<WordDisplayProps> = ({ word, guessedLetters, status 
 
     const displayWord = word.split('').map((char) => {
         if (status === 'finished') return char;
-        return guessedLetters.includes(char.toLowerCase()) ? char : '_';
+        // Check if the character (upper) is in the guessed list (also upper)
+        // Treat spaces as always visible
+        if (char === ' ') return ' ';
+        return guessedLetters.includes(char.toUpperCase()) ? char : '_';
     });
 
     return (
