@@ -270,7 +270,7 @@ export default function GamePage() {
                                         onClick={handleNewGame}
                                         className="mt-4 bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-3 px-8 rounded-lg transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30"
                                     >
-                                        🎮 Starta Spelet
+                                        Starta Spelet
                                     </button>
                                 </div>
                             )}

@@ -139,7 +139,7 @@ export default function Home() {
                             transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
                         />
                         <div className="p-1 rounded-full bg-brand-primary/10 border border-brand-primary/30 shadow-[0_0_40px_rgba(5,150,105,0.3)] overflow-hidden w-24 h-24 relative">
-                            <img src="/obsidian_ostrich.png" alt="Ostrich Hangman" className="object-cover w-full h-full rounded-full bg-black" />
+                            <img src="/ostrich.png" alt="Ostrich Hangman" className="object-cover w-full h-full rounded-full bg-black" />
                         </div>
                     </motion.div>
 

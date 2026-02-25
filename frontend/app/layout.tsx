@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
     title: 'Ostrich Hangman',
-    description: 'Multiplayer Swedish Hangman Game',
+    description: 'Team Ostrich Hänga Gubbe',
 }
 
 export default function RootLayout({
