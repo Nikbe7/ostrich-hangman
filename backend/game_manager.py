@@ -152,8 +152,6 @@ class GameManager:
                     'chooser': self.chooser_id,
                     'total_guesses': len(self.guessed)
                 })
-                while len(self.history) > 10:
-                    self.history.pop()
 
                 current_chooser = self.chooser_id
                 if current_chooser and current_chooser in self.players:
@@ -175,8 +173,6 @@ class GameManager:
                     'chooser': self.chooser_id,
                     'total_guesses': len(self.guessed)
                 })
-                while len(self.history) > 10:
-                    self.history.pop()
 
     async def choose_word(self, uuid: str, word: str) -> Tuple[bool, str]:
         """

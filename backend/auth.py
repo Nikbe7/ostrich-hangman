@@ -63,7 +63,7 @@ class AuthManager:
     def login(username: str, password: str) -> Dict[str, Any]:
         result = supabase.table('app_users').select('*').ilike('username', username.strip()).execute()
         if not result.data or len(result.data) == 0:
-            return {"success": False, "error": "Felaktigt användarnamn eller lösenord."}
+            return {"success": False, "error": "Användarnamnet finns inte."}
             
         user = result.data[0]
 
@@ -73,7 +73,7 @@ class AuthManager:
         _, check_hash = AuthManager._hash_password(password, salt)
         
         if check_hash != stored_hash:
-            return {"success": False, "error": "Felaktigt användarnamn eller lösenord."}
+            return {"success": False, "error": "Fel lösenord."}
 
         # Create session
         token = secrets.token_urlsafe(32)

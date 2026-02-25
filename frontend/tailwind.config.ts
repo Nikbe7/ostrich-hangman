@@ -8,6 +8,16 @@ const config: Config = {
     ],
     theme: {
         extend: {
+            colors: {
+                brand: {
+                    dark: '#000000', // Pitch black
+                    darker: '#000000',
+                    card: '#171717', // Neutral 900
+                    primary: '#059669', // Emerald 600
+                    primaryHover: '#10b981', // Emerald 500
+                    danger: '#dc2626', // Red 600
+                }
+            },
             backgroundImage: {
                 'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
                 'gradient-conic':

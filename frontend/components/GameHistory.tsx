@@ -21,16 +21,16 @@ const GameHistory: React.FC<GameHistoryProps> = ({ history, players }) => {
     };
 
     return (
-        <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm">
-            <h3 className="text-lg font-bold mb-3 text-white flex items-center gap-2">
-                📜 Historik
+        <div className="bg-brand-card/50 p-6 rounded-2xl backdrop-blur-md border border-white/5 shadow-xl">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-300">
+                <span className="text-brand-primary">📜</span> Historik
             </h3>
-            <ul className="space-y-1.5">
+            <ul className="space-y-2 max-h-[50vh] overflow-y-auto pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/20">
                 {history.map((entry, i) => (
-                    <li key={i} className="flex flex-col p-2 rounded bg-black/20 text-sm">
+                    <li key={i} className="flex flex-col p-3 rounded-xl bg-black/30 border border-white/5 hover:border-brand-primary/20 transition-colors text-sm">
                         <div className="flex justify-between items-center mb-1">
-                            <span className="font-mono text-blue-300 tracking-wider font-bold">{entry.word}</span>
-                            <span className={entry.winner ? 'text-green-400' : 'text-red-400'}>
+                            <span className="font-mono text-gray-200 tracking-wider font-bold">{entry.word}</span>
+                            <span className={entry.winner ? 'text-brand-primary font-medium' : 'text-brand-danger font-medium'}>
                                 {entry.winner ? `🏆 ${getPlayerName(entry.winner)}` : '💀 Förlust'}
                             </span>
                         </div>

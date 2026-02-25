@@ -171,7 +171,7 @@ export default function GamePage() {
     const isChooser = game?.players.find(p => p.sessionId === sessionId)?.sessionId === game?.wordChooser;
 
     return (
-        <div className="min-h-screen bg-slate-900 text-white flex flex-col md:flex-row">
+        <div className="min-h-screen bg-transparent text-white flex flex-col md:flex-row relative">
             {/* Confetti overlay */}
             {showConfetti && (
                 <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
@@ -190,18 +190,19 @@ export default function GamePage() {
             )}
 
             {/* Sidebar */}
-            <aside className="w-full md:w-72 bg-slate-800 p-4 border-r border-slate-700 flex flex-col gap-4">
-                <div>
-                    <h1 className="text-xl font-bold">Rum: {gameId}</h1>
+            <aside className="w-full md:w-72 bg-brand-card/50 backdrop-blur-md p-4 border-r border-white/5 flex flex-col gap-4 z-10">
+                <div className="flex items-center gap-2">
+                    <h1 className="text-xl font-bold flex-1">Rum: {gameId}</h1>
                     <button
                         onClick={() => {
                             navigator.clipboard.writeText(gameId);
                             setNotification('Spel-ID kopierat!');
                             setTimeout(() => setNotification(''), 2000);
                         }}
-                        className="text-xs text-blue-400 hover:text-blue-300 underline mt-1"
+                        className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
+                        title="Kopiera Spel-ID"
                     >
-                        Kopiera Spel-ID
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
                     </button>
                 </div>
 
@@ -214,10 +215,10 @@ export default function GamePage() {
                     </>
                 )}
 
-                <div className="mt-auto border-t border-slate-700 pt-4 space-y-2">
+                <div className="mt-auto border-t border-white/5 pt-4 space-y-2">
                     <button
                         onClick={handleLeaveGame}
-                        className="w-full flex items-center justify-center gap-2 text-gray-300 text-sm border border-slate-600 hover:bg-slate-700 p-2.5 rounded transition-colors"
+                        className="w-full flex items-center justify-center gap-2 text-gray-300 text-sm border border-white/10 hover:bg-white/5 p-2.5 rounded transition-colors"
                     >
                         ← Tillbaka till startsidan
                     </button>
@@ -225,7 +226,7 @@ export default function GamePage() {
             </aside>
 
             {/* Main Game Area */}
-            <main className="flex-1 p-4 md:p-8 flex flex-col items-center max-w-4xl mx-auto w-full">
+            <main className="flex-1 p-2 md:p-4 flex flex-col items-center max-w-4xl mx-auto w-full">
                 {/* Notifications & Errors */}
                 {error && (
                     <div className="bg-red-500/90 text-white p-3 rounded mb-4 fixed top-4 right-4 animate-bounce z-50 shadow-lg">
@@ -240,9 +241,9 @@ export default function GamePage() {
 
                 {game?.dynamic_ai_status && (
                     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
-                        <div className="bg-slate-800 border border-green-500/50 rounded-2xl p-8 flex flex-col items-center shadow-2xl max-w-sm w-full mx-4">
-                            <div className="w-12 h-12 border-4 border-slate-600 border-t-green-500 rounded-full animate-spin mb-6" />
-                            <h3 className="text-xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent text-center mb-2">
+                        <div className="bg-brand-card border border-brand-primary/50 rounded-2xl p-8 flex flex-col items-center shadow-2xl max-w-sm w-full mx-4">
+                            <div className="w-12 h-12 border-4 border-white/10 border-t-brand-primary rounded-full animate-spin mb-6" />
+                            <h3 className="text-xl font-bold bg-gradient-to-r from-brand-primary to-brand-primaryHover bg-clip-text text-transparent text-center mb-2">
                                 AI Validering
                             </h3>
                             <p className="text-gray-300 text-center animate-pulse">
@@ -261,13 +262,13 @@ export default function GamePage() {
                 ) : (
                     <>
                         {/* Game Status Header */}
-                        <div className="mb-8 text-center min-h-[64px] flex items-center justify-center">
+                        <div className="mb-4 text-center min-h-[64px] flex items-center justify-center">
                             {game.status === 'waiting' && (
                                 <div className="text-gray-400">
                                     <h2 className="text-xl">Väntar på att spelet ska börja...</h2>
                                     <button
                                         onClick={handleNewGame}
-                                        className="mt-4 bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-lg transition-all transform active:scale-95 shadow-lg shadow-green-500/30"
+                                        className="mt-4 bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-3 px-8 rounded-lg transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30"
                                     >
                                         🎮 Starta Spelet
                                     </button>
@@ -276,7 +277,7 @@ export default function GamePage() {
                             {game.status === 'choosing' && (
                                 <div>
                                     {isMyTurnToChoose ? (
-                                        <div className="bg-green-600/20 p-4 rounded-lg border border-green-500 text-green-300 animate-pulse">
+                                        <div className="bg-brand-primary/20 p-4 rounded-lg border border-brand-primary text-brand-primary animate-pulse">
                                             <h2 className="text-xl font-bold">Det är din tur att välja ord! 👑</h2>
                                         </div>
                                     ) : (
@@ -297,25 +298,25 @@ export default function GamePage() {
                             {game.status === 'finished' && (
                                 <div className="w-full">
                                     {game.winnerId ? (
-                                        <div className={`p-5 rounded-lg border space-y-3 ${game.winnerId === sessionId ? 'bg-green-600/20 border-green-500 text-green-300' : 'bg-yellow-600/20 border-yellow-500 text-yellow-300'}`}>
+                                        <div className={`p-5 rounded-lg border space-y-3 ${game.winnerId === sessionId ? 'bg-brand-primary/20 border-brand-primary text-brand-primary' : 'bg-yellow-600/20 border-yellow-500 text-yellow-300'}`}>
                                             <h2 className="text-2xl font-bold">
                                                 {game.winnerId === sessionId ? '🏆 Du Vann!' : `🏆 ${game.players.find(p => p.sessionId === game.winnerId)?.name || 'Någon'} Vann!`}
                                             </h2>
                                             <p className="text-sm text-gray-300">Ordet var: <span className="font-bold text-white">{game.word}</span></p>
                                             <button
                                                 onClick={handleNewGame}
-                                                className="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-lg transition-all transform active:scale-95 shadow-lg shadow-green-500/30"
+                                                className="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-3 px-8 rounded-lg transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30"
                                             >
                                                 🔄 Nytt Spel
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="bg-red-600/20 p-5 rounded-lg border border-red-500 text-red-300 space-y-3">
+                                        <div className="bg-brand-danger/20 p-5 rounded-lg border border-brand-danger text-red-300 space-y-3">
                                             <h2 className="text-2xl font-bold">💀 Spelet är slut!</h2>
                                             <p className="text-sm text-gray-300">Ordet var: <span className="font-bold text-white">{game.word}</span></p>
                                             <button
                                                 onClick={handleNewGame}
-                                                className="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-lg transition-all transform active:scale-95 shadow-lg shadow-green-500/30"
+                                                className="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-3 px-8 rounded-lg transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30"
                                             >
                                                 🔄 Nytt Spel
                                             </button>
@@ -327,18 +328,18 @@ export default function GamePage() {
 
                         {/* Action Area: Choose Word */}
                         {isMyTurnToChoose && (
-                            <div className="w-full max-w-md bg-slate-800 p-6 rounded-xl shadow-xl border border-green-500/30 animate-fadeIn">
+                            <div className="w-full max-w-md bg-brand-card/80 backdrop-blur-md p-6 rounded-xl shadow-xl border border-brand-primary/30 animate-fadeIn">
                                 <form onSubmit={handleSubmitWord} className="flex flex-col gap-4">
                                     <label className="text-sm font-medium text-gray-300">Skriv ett svenskt ord för de andra att gissa:</label>
                                     <input
                                         type="text"
                                         value={wordInput}
                                         onChange={(e) => setWordInput(e.target.value)}
-                                        className="p-3 rounded bg-black/50 border border-gray-600 text-white focus:border-green-500 outline-none transition-colors"
+                                        className="p-3 rounded bg-black/50 border border-white/10 text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-colors"
                                         placeholder="Hemligt ord..."
                                         autoFocus
                                     />
-                                    <button type="submit" className="bg-green-600 hover:bg-green-500 py-3 rounded font-bold transition-colors shadow-lg">
+                                    <button type="submit" className="bg-brand-primary hover:bg-brand-primaryHover py-3 rounded font-bold transition-colors shadow-lg">
                                         ✅ Välj Ord
                                     </button>
                                 </form>
@@ -348,12 +349,16 @@ export default function GamePage() {
                         {/* Gameplay Area */}
                         {(game.status === 'playing' || game.status === 'finished') && (
                             <div className="w-full flex flex-col items-center animate-fadeIn">
-                                <Hangman wrongGuesses={game.wrongGuesses} />
+                                <Hangman
+                                    wrongGuesses={game.wrongGuesses}
+                                    status={game.status}
+                                    isWin={game.status === 'finished' && game.winnerId !== null}
+                                />
                                 <WordDisplay word={game.word} guessedLetters={game.guessedLetters} status={game.status} />
 
                                 {/* GuessedLetters moved to right sidebar */}
 
-                                <div className="mt-8 w-full">
+                                <div className="mt-4 w-full">
                                     {!isChooser && (
                                         <Keyboard
                                             guessedLetters={game.guessedLetters}
@@ -369,7 +374,7 @@ export default function GamePage() {
             </main>
 
             {/* Right Sidebar - Guessed Letters */}
-            <aside className="w-full md:w-64 bg-slate-800 p-4 border-l border-slate-700 flex flex-col gap-4 overflow-y-auto">
+            <aside className="w-full md:w-64 bg-brand-card/50 backdrop-blur-md p-4 border-l border-white/5 flex flex-col gap-4 overflow-y-auto z-10">
                 {game && (
                     <GuessedLetters guessedLetters={game.guessedLetters} word={game.word} guessLog={game.guessLog} />
                 )}

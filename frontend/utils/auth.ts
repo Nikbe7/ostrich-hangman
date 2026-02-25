@@ -23,7 +23,11 @@ export const registerUser = async (username: string, password: string): Promise<
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
         });
-        return await response.json();
+        const data = await response.json();
+        if (!response.ok) {
+            return { success: false, error: data.detail || 'Något gick fel.' };
+        }
+        return data;
     } catch (error) {
         return { success: false, error: 'Kunde inte ansluta till servern.' };
     }
@@ -36,7 +40,11 @@ export const loginUser = async (username: string, password: string): Promise<Aut
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
         });
-        return await response.json();
+        const data = await response.json();
+        if (!response.ok) {
+            return { success: false, error: data.detail || 'Något gick fel.' };
+        }
+        return data;
     } catch (error) {
         return { success: false, error: 'Kunde inte ansluta till servern.' };
     }

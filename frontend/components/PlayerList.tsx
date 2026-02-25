@@ -29,7 +29,7 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayerId, wordC
                 {players.map((p, i) => (
                     <li key={`${p.sessionId}-${i}`} className="flex items-center justify-between p-2 rounded bg-black/20">
                         <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${p.isOnline ? 'bg-green-500' : 'bg-gray-500'}`} />
+                            <div className={`w-3 h-3 rounded-full ${p.isOnline ? 'bg-brand-primary shadow-[0_0_8px_rgba(5,150,105,0.6)]' : 'bg-gray-500'}`} />
                             <span className={`font-medium ${p.sessionId === currentPlayerId ? 'text-yellow-300' : 'text-white'}`}>
                                 {p.sessionId === wordChooser && '👑 '}
                                 {p.name} {p.sessionId === currentPlayerId && '(Du)'}

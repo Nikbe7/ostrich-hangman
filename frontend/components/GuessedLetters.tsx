@@ -30,8 +30,8 @@ const GuessedLetters: React.FC<GuessedLettersProps> = ({ guessedLetters, word, g
                             className={`
                                 w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm shadow-sm
                                 ${item.correct
-                                    ? 'bg-green-600 text-white border border-green-400'
-                                    : 'bg-red-600/80 text-white border border-red-400'
+                                    ? 'bg-brand-primary text-white border border-brand-primaryHover'
+                                    : 'bg-brand-danger/80 text-white border border-brand-danger'
                                 }
                             `}
                         >
