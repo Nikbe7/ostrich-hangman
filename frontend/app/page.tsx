@@ -10,6 +10,7 @@ import {
 } from '@/utils/session';
 import { getToken, getUser, User, logout, fetchUserGames, removeUserGame } from '@/utils/auth';
 import AuthForm from '@/components/AuthForm';
+import OstrichAnimation from '@/components/OstrichAnimation';
 
 const staggerContainer = {
     hidden: { opacity: 0 },
@@ -30,6 +31,8 @@ export default function Home() {
     const [gameIdInput, setGameIdInput] = useState('');
     const [gameHistory, setGameHistory] = useState<string[]>([]);
     const [ready, setReady] = useState(false);
+    const [loginAnimating, setLoginAnimating] = useState(false);
+    const [pendingUser, setPendingUser] = useState<{ user: User; games: string[] } | null>(null);
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -60,10 +63,27 @@ export default function Home() {
         const storedUser = getUser();
         const token = getToken();
         if (storedUser && token) {
-            setUserState(storedUser);
             const games = await fetchUserGames(token);
-            setGameHistory(games);
+            // Store the data but don't show dashboard yet — trigger animation first
+            setPendingUser({ user: storedUser, games });
+            setLoginAnimating(true);
         }
+    };
+
+    const handleAnimationComplete = () => {
+        if (pendingUser) {
+            // Step 1: Update user state so the dashboard renders BEHIND the still-opaque overlay
+            setUserState(pendingUser.user);
+            setGameHistory(pendingUser.games);
+            setPendingUser(null);
+        }
+        // Step 2: Wait for React to paint the dashboard behind the overlay,
+        // then remove the overlay (triggering its fade-out exit)
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                setLoginAnimating(false);
+            });
+        });
     };
 
     const handleLogout = () => {
@@ -113,6 +133,13 @@ export default function Home() {
         <main className="flex min-h-screen flex-col items-center justify-center p-6 sm:p-8 bg-brand-dark text-white relative overflow-hidden">
             {/* Subtle background glow */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(5,150,105,0.15),rgba(0,0,0,1)_60%)] pointer-events-none" />
+
+            {/* Ostrich fly-away login animation overlay */}
+            <AnimatePresence>
+                {loginAnimating && (
+                    <OstrichAnimation onComplete={handleAnimationComplete} />
+                )}
+            </AnimatePresence>
 
             <motion.div
                 variants={staggerContainer}
