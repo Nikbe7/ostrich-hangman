@@ -74,21 +74,8 @@ const Hangman: React.FC<HangmanProps> = ({ wrongGuesses, status = 'playing', isW
     const transformOrigin = isLoss ? "200px 60px" : "200px 150px";
 
     return (
-        <div className="flex justify-center mb-10 relative mt-4">
-            {/* Soft background glow - changes to red pulse on loss */}
-            <motion.div
-                className="absolute inset-0 blur-[50px] rounded-full"
-                animate={{
-                    backgroundColor: isLoss ? "rgba(239, 68, 68, 0.2)" : "rgba(20, 184, 166, 0.05)",
-                    scale: isLoss ? [1, 1.2, 1] : 1
-                }}
-                transition={{
-                    backgroundColor: { duration: 1 },
-                    scale: isLoss ? { repeat: Infinity, duration: 2, ease: "easeInOut" } : { duration: 0 }
-                }}
-            />
-
-            <svg width="320" height="320" viewBox="0 0 350 350" className="drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] relative z-10 overflow-visible">
+        <div className="hangman-container relative flex items-center justify-center w-full">
+            <svg viewBox="0 0 350 350" className="drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] relative z-10 overflow-visible w-full max-w-[280px] sm:max-w-[350px] max-h-[20vh] sm:max-h-[25vh]">
                 {/* Disco lights for win - Only active during dance phase - SVG based strobes */}
                 <AnimatePresence>
                     {isDancing && (
@@ -96,6 +83,7 @@ const Hangman: React.FC<HangmanProps> = ({ wrongGuesses, status = 'playing', isW
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
+                            className="translate-y-[60px] sm:translate-y-0"
                         >
                             {/* Left purple strobe */}
                             <motion.polygon
@@ -250,7 +238,6 @@ const Hangman: React.FC<HangmanProps> = ({ wrongGuesses, status = 'playing', isW
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ type: "spring" as const }}
                                 >
-                                    {/* Position absolute relative to the figure's root, made smaller and moved higher up */}
                                     <path d="M 230 40 Q 230 20 250 20 L 270 20 Q 290 20 290 40 L 290 55 Q 290 75 270 75 L 250 75 L 240 90 L 245 75 Q 230 75 230 55 Z" fill="white" stroke="none" />
                                     <text x="260" y="52" fill="black" fontSize="16" fontWeight="bold" textAnchor="middle" stroke="none">Tack!</text>
                                 </motion.g>

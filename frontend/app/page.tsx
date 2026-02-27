@@ -145,9 +145,9 @@ export default function Home() {
                 variants={staggerContainer}
                 initial="hidden"
                 animate="show"
-                className="max-w-xl w-full space-y-8 relative z-10"
+                className="max-w-xl w-full space-y-6 sm:space-y-8 relative z-10"
             >
-                <motion.div variants={itemVariants} className="text-center space-y-5 relative z-20">
+                <motion.div variants={itemVariants} className="text-center space-y-4 sm:space-y-5 relative z-20">
                     <motion.div
                         initial={{ scale: 0.5, opacity: 0, rotate: -10 }}
                         animate={{ scale: 1, opacity: 1, rotate: 0 }}
@@ -171,7 +171,7 @@ export default function Home() {
                     </motion.div>
 
                     {/* Animated title with staggered word reveal */}
-                    <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                    <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
                         {'Välkommen till'.split(' ').map((word, i) => (
                             <motion.span
                                 key={i}
@@ -197,7 +197,7 @@ export default function Home() {
                             initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
                             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                             transition={{ delay: 0.9, duration: 0.7, type: "spring", stiffness: 120 }}
-                            className="inline-block bg-gradient-to-r from-brand-primary via-emerald-300 to-teal-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(5,150,105,0.5)] text-5xl sm:text-6xl pb-2"
+                            className="inline-block bg-gradient-to-r from-brand-primary via-emerald-300 to-teal-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(5,150,105,0.5)] text-4xl sm:text-6xl pb-2"
                         >
                             Hänga Gubbe
                         </motion.span>
@@ -223,7 +223,7 @@ export default function Home() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 100 }}
-                            className="bg-brand-card/80 p-8 rounded-2xl backdrop-blur-xl border border-white/5 shadow-2xl space-y-8"
+                            className="bg-brand-card/80 p-5 sm:p-8 rounded-2xl backdrop-blur-xl border border-white/5 shadow-2xl space-y-6 sm:space-y-8"
                         >
                             <div className="flex justify-between items-center pb-6 border-b border-brand-primary/20">
                                 <div>
@@ -243,12 +243,12 @@ export default function Home() {
                                     whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(5, 150, 105, 0.4)" }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={handleCreateGame}
-                                    className="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-4 px-4 rounded-xl transition-all shadow-lg"
+                                    className="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-4 px-4 rounded-xl transition-all shadow-lg text-sm sm:text-base"
                                 >
                                     Starta Nytt Spel
                                 </motion.button>
 
-                                <div className="flex gap-3 relative">
+                                <div className="flex flex-col sm:flex-row gap-3 relative">
                                     <input
                                         type="text"
                                         value={gameIdInput}
@@ -260,7 +260,7 @@ export default function Home() {
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={handleJoinGame}
-                                        className="bg-brand-card hover:bg-white/5 border border-white/10 text-white font-bold py-4 px-6 rounded-xl transition-all backdrop-blur-sm"
+                                        className="w-full sm:w-auto bg-brand-card hover:bg-white/5 border border-white/10 text-white font-bold py-4 px-6 rounded-xl transition-all backdrop-blur-sm text-sm sm:text-base"
                                     >
                                         Gå Med
                                     </motion.button>
@@ -271,53 +271,53 @@ export default function Home() {
                 </AnimatePresence>
 
                 {/* Game History */}
-                {user && gameHistory.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 100 }}
-                        className="bg-brand-card/50 p-6 rounded-2xl backdrop-blur-md border border-white/5 shadow-xl"
-                    >
-                        <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-300">
-                            <span className="text-brand-primary">📜</span> Dina Aktiva Spel
-                        </h2>
-                        <ul className="space-y-3">
-                            <AnimatePresence>
-                                {gameHistory.map((gId) => (
-                                    <motion.li
-                                        key={gId}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 20 }}
-                                        className="flex items-center justify-between bg-black/30 p-4 rounded-xl border border-white/5 hover:border-brand-primary/30 transition-colors"
-                                    >
-                                        <span className="font-mono font-bold text-gray-200 tracking-wider">{gId}</span>
-                                        <div className="flex gap-2">
-                                            <motion.button
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => handleRejoinGame(gId)}
-                                                className="text-sm bg-brand-primary/20 hover:bg-brand-primaryHover text-white px-4 py-2 rounded-lg transition-colors font-medium"
-                                            >
-                                                Återuppta
-                                            </motion.button>
-                                            <motion.button
-                                                whileHover={{ scale: 1.05, backgroundColor: "rgba(239, 68, 68, 0.2)" }}
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => handleRemoveGame(gId)}
-                                                className="text-sm text-gray-400 hover:text-red-400 px-3 py-2 rounded-lg transition-colors"
-                                            >
-                                                ✕
-                                            </motion.button>
-                                        </div>
-                                    </motion.li>
-                                ))}
-                            </AnimatePresence>
-                        </ul>
-                    </motion.div>
-                )}
-            </motion.div>
-        </main>
+                {
+                    user && gameHistory.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 100 }}
+                            className="bg-brand-card/50 p-4 sm:p-6 rounded-2xl backdrop-blur-md border border-white/5 shadow-xl"
+                        >
+                            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-300">Dina Aktiva Spel</h2>
+                            <ul className="space-y-3">
+                                <AnimatePresence>
+                                    {gameHistory.map((gId) => (
+                                        <motion.li
+                                            key={gId}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: 20 }}
+                                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 bg-black/30 p-4 rounded-xl border border-white/5 hover:border-brand-primary/30 transition-colors"
+                                        >
+                                            <span className="font-mono font-bold text-gray-200 tracking-wider text-center sm:text-left">{gId}</span>
+                                            <div className="flex gap-2 w-full sm:w-auto">
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => handleRejoinGame(gId)}
+                                                    className="flex-1 sm:flex-none text-sm bg-brand-primary/20 hover:bg-brand-primaryHover text-white px-4 py-2 rounded-lg transition-colors font-medium justify-center flex"
+                                                >
+                                                    Återuppta
+                                                </motion.button>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05, backgroundColor: "rgba(239, 68, 68, 0.2)" }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => handleRemoveGame(gId)}
+                                                    className="text-sm text-gray-400 hover:text-red-400 px-3 py-2 rounded-lg transition-colors"
+                                                >
+                                                    ✕
+                                                </motion.button>
+                                            </div>
+                                        </motion.li>
+                                    ))}
+                                </AnimatePresence>
+                            </ul>
+                        </motion.div>
+                    )
+                }
+            </motion.div >
+        </main >
     );
 }

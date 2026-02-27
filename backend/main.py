@@ -2,9 +2,9 @@ import socketio
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from .game_manager import game_lobby
-from .auth import AuthManager
-from .schemas import AuthRequest
+from .services.game_service import game_lobby
+from .services.auth_service import AuthManager
+from .routers import auth, user
 import os
 
 # Create Socket.IO server (Async)
@@ -24,45 +24,9 @@ app.add_middleware(
 )
 
 
-# --- REST API (Auth) ---
-
-@app.post("/api/auth/register")
-async def register(request: AuthRequest):
-    result = AuthManager.register(request.username, request.password)
-    if not result["success"]:
-        raise HTTPException(status_code=400, detail=result["error"])
-    return result
-
-@app.post("/api/auth/login")
-async def login(request: AuthRequest):
-    result = AuthManager.login(request.username, request.password)
-    if not result["success"]:
-        raise HTTPException(status_code=401, detail=result["error"])
-    return result
-
-@app.get("/api/user/games")
-async def get_user_games(authorization: str = Header(None)):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    token = authorization.split(" ")[1]
-    user = AuthManager.get_user_by_token(token)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    games = AuthManager.get_user_games(user["id"])
-    return {"success": True, "games": games}
-
-@app.delete("/api/user/games/{game_id}")
-async def remove_user_game(game_id: str, authorization: str = Header(None)):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    token = authorization.split(" ")[1]
-    user = AuthManager.get_user_by_token(token)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    AuthManager.remove_game_from_user(user["id"], game_id)
-    return {"success": True}
+# --- REST API Routers ---
+app.include_router(auth.router)
+app.include_router(user.router)
 
 # --- Socket.IO Events ---
 

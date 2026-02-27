@@ -52,7 +52,7 @@ export default function AuthForm({ onLogin }: AuthFormProps) {
     };
 
     return (
-        <div className="bg-brand-card/80 p-8 rounded-2xl backdrop-blur-xl border border-white/5 shadow-2xl w-full max-w-md">
+        <div className="bg-brand-card/80 p-5 sm:p-8 rounded-2xl backdrop-blur-xl border border-white/5 shadow-2xl w-full max-w-md">
             <h2 className="text-2xl font-bold mb-6 text-center text-white">
                 {isLogin ? 'Logga in' : 'Registrera dig'}
             </h2>

@@ -21,14 +21,14 @@ const GuessedLetters: React.FC<GuessedLettersProps> = ({ guessedLetters, word, g
     }));
 
     return (
-        <div className="flex flex-col items-center gap-2 my-4">
-            <h3 className="text-gray-400 text-sm uppercase tracking-wider font-semibold">Gissade bokstäver</h3>
-            <div className="flex flex-wrap justify-center gap-2 max-w-lg">
+        <div className="flex flex-col items-center gap-2">
+            <h3 className="text-gray-400 text-xs uppercase tracking-wider font-semibold">Gissade bokstäver</h3>
+            <div className="flex flex-wrap justify-center gap-1.5 max-h-[50vh] overflow-y-auto">
                 {lettersToDisplay.map((item, index) => (
                     <div key={index} className="flex flex-col items-center">
                         <span
                             className={`
-                                w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm shadow-sm
+                                w-7 h-7 flex items-center justify-center rounded-full font-bold text-xs shadow-sm
                                 ${item.correct
                                     ? 'bg-brand-primary text-white border border-brand-primaryHover'
                                     : 'bg-brand-danger/80 text-white border border-brand-danger'
@@ -38,7 +38,7 @@ const GuessedLetters: React.FC<GuessedLettersProps> = ({ guessedLetters, word, g
                             {item.letter}
                         </span>
                         {item.name && (
-                            <span className="text-[10px] text-gray-400 mt-1 max-w-[60px] truncate">{item.name}</span>
+                            <span className="text-[9px] text-gray-400 mt-0.5 max-w-[50px] truncate">{item.name}</span>
                         )}
                     </div>
                 ))}

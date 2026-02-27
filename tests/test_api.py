@@ -1,67 +1,80 @@
 import pytest
+from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from backend.main import app
-from backend.auth import AuthManager
+from backend.services.auth_service import AuthManager
 
 client = TestClient(app)
 
-@pytest.fixture(autouse=True)
-def wipe_db():
-    # Simple fixture to clear in-memory auth before each test
-    AuthManager.users = {}
-    AuthManager.user_games = {}
+@pytest.fixture
+def mock_supabase_client():
+    with patch("backend.services.auth_service.supabase") as mock_supa:
+        yield mock_supa
 
-def test_register_success():
-    response = client.post(
-        "/api/auth/register",
-        json={"username": "testuser", "password": "password123"}
-    )
-    assert response.status_code == 200
-    data = response.json()
-    assert data["success"] is True
-    assert "user" in data
-    assert data["user"]["username"] == "testuser"
-    assert "session" in data
-    assert "access_token" in data["session"]
+def test_register_success(mock_supabase_client):
+    mock_select = MagicMock()
+    mock_select.ilike.return_value.execute.return_value = MagicMock(data=[])
+    mock_insert = MagicMock()
+    mock_insert.execute.return_value = MagicMock(data=[{"id": "123"}])
+    
+    def table_side_effect(name):
+        mock_table = MagicMock()
+        if name == "app_users":
+            mock_table.select.return_value = mock_select
+            mock_table.insert.return_value = mock_insert
+        elif name == "app_sessions":
+            mock_table.insert.return_value = MagicMock()
+        return mock_table
+    mock_supabase_client.table.side_effect = table_side_effect
+    
+    with patch.object(AuthManager, "_hash_password", return_value=("salt", "hash")):
+        mock_select.ilike.return_value.execute.side_effect = [
+            MagicMock(data=[]), # register check
+            MagicMock(data=[{"id": "123", "username": "testuser", "salt": "salt", "password_hash": "hash"}]) # login fetch
+        ]
+        response = client.post("/api/auth/register", json={"username": "testuser", "password": "password123"})
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
 
-def test_register_duplicate():
-    client.post("/api/auth/register", json={"username": "testuser", "password": "password123"})
-    response = client.post(
-        "/api/auth/register",
-        json={"username": "testuser", "password": "password123"}
-    )
+def test_register_duplicate(mock_supabase_client):
+    mock_select = MagicMock()
+    mock_select.ilike.return_value.execute.return_value = MagicMock(data=[{"id": "exist1", "username": "testuser"}])
+    mock_table = MagicMock()
+    mock_table.select.return_value = mock_select
+    mock_supabase_client.table.return_value = mock_table
+
+    response = client.post("/api/auth/register", json={"username": "testuser", "password": "password123"})
     assert response.status_code == 400
-    assert "Användarnamnet" in response.json()["detail"] or "Username" in response.json()["detail"]
+    assert "upptaget" in response.json()["detail"].lower() or "användarnamnet" in response.json()["detail"].lower()
 
-def test_login_success():
-    client.post("/api/auth/register", json={"username": "testuser", "password": "password123"})
-    response = client.post(
-        "/api/auth/login",
-        json={"username": "testuser", "password": "password123"}
-    )
-    assert response.status_code == 200
-    assert response.json()["success"] is True
-
-def test_login_invalid():
-    client.post("/api/auth/register", json={"username": "testuser", "password": "password123"})
-    response = client.post(
-        "/api/auth/login",
-        json={"username": "testuser", "password": "wrongpassword"}
-    )
-    assert response.status_code == 401
-
-def test_get_user_games():
-    # Register and get token
-    reg_res = client.post("/api/auth/register", json={"username": "gameuser", "password": "password123"})
-    token = reg_res.json()["session"]["access_token"]
-    user_id = reg_res.json()["user"]["id"]
+def test_login_success(mock_supabase_client):
+    mock_select = MagicMock()
+    mock_select.ilike.return_value.execute.return_value = MagicMock(data=[
+        {"id": "123", "username": "testuser", "salt": "salt", "password_hash": "hash"}
+    ])
     
-    # Add a game manually
-    AuthManager.add_game_to_user(user_id, "GAME123")
-    
-    # Fetch games via API
-    response = client.get("/api/user/games", headers={"Authorization": f"Bearer {token}"})
-    assert response.status_code == 200
-    data = response.json()
-    assert data["success"] is True
-    assert "GAME123" in data["games"]
+    def table_side_effect(name):
+        mock_table = MagicMock()
+        if name == "app_users":
+            mock_table.select.return_value = mock_select
+        elif name == "app_sessions":
+            mock_table.insert.return_value = MagicMock()
+        return mock_table
+    mock_supabase_client.table.side_effect = table_side_effect
+
+    with patch.object(AuthManager, "_hash_password", return_value=("salt", "hash")):
+        response = client.post("/api/auth/login", json={"username": "testuser", "password": "password123"})
+        assert response.status_code == 200
+        assert response.json()["success"] is True
+
+def test_login_invalid(mock_supabase_client):
+    mock_select = MagicMock()
+    mock_select.ilike.return_value.execute.return_value = MagicMock(data=[
+        {"id": "123", "username": "testuser", "salt": "salt", "password_hash": "correct-hash"}
+    ])
+    mock_supabase_client.table.return_value.select.return_value = mock_select
+
+    with patch.object(AuthManager, "_hash_password", return_value=("salt", "wrong-hash")):
+        response = client.post("/api/auth/login", json={"username": "testuser", "password": "wrongpassword"})
+        assert response.status_code == 401

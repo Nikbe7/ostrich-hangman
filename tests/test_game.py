@@ -1,6 +1,7 @@
 import pytest
 import asyncio
-from backend.game_manager import GameLobby, GameManager
+from unittest.mock import patch
+from backend.services.game_service import GameLobby, GameManager
 
 def test_game_manager_creation():
     lobby = GameLobby()
@@ -24,10 +25,13 @@ async def test_game_choose_word_success():
     game.add_player("uuid1", "Player One", "sid1")
     game.start_new_round("uuid1")
     
-    # Needs to bypass AI validation if possible, or it will do HTTP call.
-    # The actual choose_word calls AI if word not in list.
-    success, msg = await game.choose_word("uuid1", "TEST")
-    assert isinstance(msg, str)
+    # Mock AI validator so we don't hit Gemini
+    with patch("backend.ai_validator.validate_word_with_ai", return_value=True):
+        success, msg = await game.choose_word("uuid1", "HACKER")
+        
+    assert success is True
+    assert game.word == "HACKER"
+    assert game.status == "playing"
 
 def test_process_guess():
     game = GameManager("LOBBY1")

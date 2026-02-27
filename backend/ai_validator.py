@@ -22,7 +22,7 @@ async def validate_word_with_ai(word: str) -> bool:
     prompt = (
         f"Du är en expert på det svenska språket och Svenska Akademiens ordlista (SAOL). "
         f"Är '{word.upper()}' ett riktigt, giltigt svenskt ord (grundform eller vanlig böjning) "
-        f"som går att hitta i en svensk ordbok, eller är det slang/påhittat?\n\n"
+        f"utan specialtecken som går att hitta i en svensk ordbok, eller är det slang/påhittat?\n\n"
         f"Svara ENBART med ordet 'JA' eller 'NEJ'. Svara inte med något annat."
     )
     
