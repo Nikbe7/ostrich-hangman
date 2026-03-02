@@ -24,6 +24,11 @@ app.add_middleware(
 )
 
 
+# --- Base Route for Health Checks ---
+@app.get("/")
+async def root():
+    return {"status": "ok", "message": "Ostrich Hangman API is running"}
+
 # --- REST API Routers ---
 app.include_router(auth.router)
 app.include_router(user.router)
