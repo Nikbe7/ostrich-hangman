@@ -14,14 +14,22 @@ export function useAuth() {
         const loadInitialData = async () => {
             const token = getToken();
             const storedUser = getUser();
+            const localGameIds = getGameHistory();
 
             if (token && storedUser) {
                 setUser(storedUser);
-                const games = await fetchUserGames(token);
-                setGameHistory(games);
+                const serverGames = await fetchUserGames(token);
+
+                // Merge server games with local history for robustness (especially after DB resets)
+                const merged = [...serverGames];
+                localGameIds.forEach(id => {
+                    if (!merged.find(g => g.id === id)) {
+                        merged.push({ id, last_activity: Date.now() / 1000 });
+                    }
+                });
+                setGameHistory(merged);
             } else {
-                const localGames = getGameHistory();
-                setGameHistory(localGames.map(id => ({ id, last_activity: Date.now() / 1000 })));
+                setGameHistory(localGameIds.map(id => ({ id, last_activity: Date.now() / 1000 })));
             }
             setIsLoading(false);
         };
@@ -29,31 +37,39 @@ export function useAuth() {
         loadInitialData();
     }, []);
 
-    const login = (userData: User, games: GameMetadata[]) => {
+    const login = (userData: User, serverGames: GameMetadata[]) => {
         setUser(userData);
-        setGameHistory(games);
+        const localGameIds = getGameHistory();
+
+        const merged = [...serverGames];
+        localGameIds.forEach(id => {
+            if (!merged.find(g => g.id === id)) {
+                merged.push({ id, last_activity: Date.now() / 1000 });
+            }
+        });
+        setGameHistory(merged);
     };
 
     const logout = () => {
         apiLogout();
         setUser(null);
-        setGameHistory([]);
+        // Clear history on logout to show fresh local history on next load
+        const localGames = getGameHistory();
+        setGameHistory(localGames.map(id => ({ id, last_activity: Date.now() / 1000 })));
     };
 
     const removeGame = async (gameId: string) => {
         const token = getToken();
+
+        // Always remove locally first for instant UI response
+        removeLocalGame(gameId);
+        setGameHistory(prev => prev.filter(g => g.id !== gameId));
+
         if (user && token) {
-            const success = await removeUserGame(token, gameId);
-            if (success) {
-                setGameHistory(prev => prev.filter(g => g.id !== gameId));
-                return true;
-            }
-            return false;
-        } else {
-            removeLocalGame(gameId);
-            setGameHistory(prev => prev.filter(g => g.id !== gameId));
-            return true;
+            // Also remove from server if logged in
+            await removeUserGame(token, gameId);
         }
+        return true;
     };
 
     return {

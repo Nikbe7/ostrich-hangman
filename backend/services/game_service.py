@@ -321,11 +321,19 @@ class GameLobby:
     def get_games_metadata(self, game_ids: List[str]) -> List[Dict[str, Any]]:
         """Returns metadata (id, last_activity) for a list of game IDs."""
         result = []
+        now = time.time()
         for g_id in game_ids:
             if g_id in self.games:
                 result.append({
                     "id": g_id,
                     "last_activity": self.games[g_id].last_activity
+                })
+            else:
+                # Still return the ID so it shows up in history, 
+                # even if it's not currently 'active' in memory.
+                result.append({
+                    "id": g_id,
+                    "last_activity": now # Fallback to now if unknown
                 })
         return result
 
