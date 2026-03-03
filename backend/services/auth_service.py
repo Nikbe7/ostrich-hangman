@@ -1,14 +1,14 @@
 import os
 import json
 import secrets
-import hashlib
 import uuid
+from passlib.context import CryptContext
 from ..core.supabase import supabase
 from typing import Dict, Any, Optional
 from datetime import datetime
-import secrets
-import hashlib
-import uuid
+
+# Setup passlib CryptContext for bcrypt hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # In-memory cache to prevent Supabase rate-limits during rapid socket events
 _session_cache: Dict[str, Dict[str, Any]] = {}
@@ -20,16 +20,12 @@ class AuthManager:
     """
 
     @staticmethod
-    def _hash_password(password: str, salt: Optional[str] = None) -> tuple[str, str]:
-        if not salt:
-            salt = secrets.token_hex(16)
-        key = hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            salt.encode('utf-8'),
-            100000
-        )
-        return salt, key.hex()
+    def _hash_password(password: str) -> str:
+        return pwd_context.hash(password)
+
+    @staticmethod
+    def _verify_password(plain_password: str, hashed_password: str) -> bool:
+        return pwd_context.verify(plain_password, hashed_password)
 
     @staticmethod
     def register(username: str, password: str) -> Dict[str, Any]:
@@ -40,13 +36,12 @@ class AuthManager:
 
         # Create new user
         user_id = str(uuid.uuid4())
-        salt, password_hash = AuthManager._hash_password(password)
+        password_hash = AuthManager._hash_password(password)
         
         new_user = {
             "id": user_id,
             "username": username.strip(), # Keep original casing for display
             "password_hash": password_hash,
-            "salt": salt,
             "games": [] # Persistent list of joined games
         }
         
@@ -67,12 +62,10 @@ class AuthManager:
             
         user = result.data[0]
 
-        # Verify password
-        salt = user['salt']
+        # Verify password using passlib
         stored_hash = user['password_hash']
-        _, check_hash = AuthManager._hash_password(password, salt)
         
-        if check_hash != stored_hash:
+        if not AuthManager._verify_password(password, stored_hash):
             return {"success": False, "error": "Fel lösenord."}
 
         # Create session

@@ -5,6 +5,7 @@ supabase
 python-dotenv
 websockets
 google-genai
+passlib[bcrypt]
 
 # Testing
 pytest
