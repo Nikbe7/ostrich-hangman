@@ -10,6 +10,26 @@ export default defineConfig({
         globals: true,
         alias: {
             '@': path.resolve(__dirname, './')
-        }
+        },
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'lcov'],
+            thresholds: {
+                lines: 50,
+                functions: 50,
+                branches: 50,
+                statements: 50,
+            },
+            exclude: [
+                '**/*.test.tsx',
+                '**/*.test.ts',
+                'vitest-setup.ts',
+                'vitest.config.ts',
+                'next.config.*',
+                '.next/**',
+                'node_modules/**',
+            ],
+        },
     },
 })
+

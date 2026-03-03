@@ -4,22 +4,22 @@
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
-echo "Running backend tests (pytest)..."
-cd "$REPO_ROOT" && python -m pytest --tb=short -q
+echo "Running backend tests and coverage (pytest)..."
+cd "$REPO_ROOT" && python -m pytest --cov=backend --cov-fail-under=55 --tb=short -q
 if [ $? -ne 0 ]; then
     echo ""
-    echo "❌ Backend tests FAILED. Push aborted."
-    echo "   Fix the failing tests and try again."
+    echo "❌ Backend tests or coverage FAILED. Push aborted."
+    echo "   Fix the failing tests or increase coverage and try again."
     exit 1
 fi
 
 echo ""
-echo "Running frontend tests (vitest)..."
-cd "$REPO_ROOT/frontend" && npm run test
+echo "Running frontend tests and coverage (vitest)..."
+cd "$REPO_ROOT/frontend" && npm run coverage
 if [ $? -ne 0 ]; then
     echo ""
-    echo "❌ Frontend tests FAILED. Push aborted."
-    echo "   Fix the failing tests and try again."
+    echo "❌ Frontend tests or coverage FAILED. Push aborted."
+    echo "   Fix the failing tests or increase coverage and try again."
     exit 1
 fi
 

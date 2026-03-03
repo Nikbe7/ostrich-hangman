@@ -45,7 +45,7 @@ cd ostrich-hangman
 ```
 
 ### 2. Install Git Hooks
-This project includes a pre-push hook that runs all tests before allowing a push. Install it once after cloning:
+This project includes a pre-push hook that runs all tests and enforces minimum test coverage thresholds (55% backend, 50% frontend) before allowing a push. Install it once after cloning:
 ```bash
 sh scripts/setup.sh
 ```
