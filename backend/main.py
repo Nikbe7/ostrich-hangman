@@ -130,7 +130,7 @@ async def join_game(sid, data):
                 AuthManager.add_game_to_user(uuid, game_id)
 
             # Emit current state to everyone in the room (including the new joiner)
-            state = game.get_state()
+            state = game.get_state_for_frontend()
             logger.info("Emitting update_game to room=%s, players=%d", game_id, len(state['players']))
             await sio.emit('update_game', state, room=game_id)
             

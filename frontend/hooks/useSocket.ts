@@ -16,6 +16,12 @@ export const useSocket = (namespace = '') => {
     useEffect(() => {
         const token = getToken();
 
+        // If the socket exists but the token changed, we need to reconnect
+        if (globalSocket && globalSocket.auth && (globalSocket.auth as any).token !== token) {
+            globalSocket.disconnect();
+            globalSocket = null;
+        }
+
         if (!globalSocket) {
             globalSocket = io(`${SOCKET_URL}${namespace}`, {
                 autoConnect: true,

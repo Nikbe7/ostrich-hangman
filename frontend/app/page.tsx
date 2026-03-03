@@ -33,7 +33,8 @@ export default function Home() {
         if (!isLoading) {
             const lastGameId = getLastGameId();
             if (lastGameId) {
-                router.push(`/game/${lastGameId}`);
+                // Use replace instead of push to avoid history warnings and maintain a clean back-button experience
+                router.replace(`/game/${lastGameId}`);
                 return;
             }
             setReady(true);
