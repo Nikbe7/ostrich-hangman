@@ -1,0 +1,28 @@
+#!/bin/sh
+# Pre-push hook: Run all tests before allowing a push.
+# This file is committed to the repo. To install, run: scripts/setup.sh
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+echo "Running backend tests (pytest)..."
+cd "$REPO_ROOT" && python -m pytest --tb=short -q
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ Backend tests FAILED. Push aborted."
+    echo "   Fix the failing tests and try again."
+    exit 1
+fi
+
+echo ""
+echo "Running frontend tests (vitest)..."
+cd "$REPO_ROOT/frontend" && npm run test
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ Frontend tests FAILED. Push aborted."
+    echo "   Fix the failing tests and try again."
+    exit 1
+fi
+
+echo ""
+echo "✅ All tests passed! Pushing..."
+exit 0

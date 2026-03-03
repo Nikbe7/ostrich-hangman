@@ -44,7 +44,13 @@ git clone https://github.com/Nikbe7/ostrich-hangman.git
 cd ostrich-hangman
 ```
 
-### 2. Backend Setup
+### 2. Install Git Hooks
+This project includes a pre-push hook that runs all tests before allowing a push. Install it once after cloning:
+```bash
+sh scripts/setup.sh
+```
+
+### 3. Backend Setup
 ```bash
 cd backend
 
@@ -67,7 +73,7 @@ uvicorn main:socket_app --host 0.0.0.0 --port 8000 --reload
 *The backend will be available at http://localhost:8000*
 
 
-### 3. Frontend Setup
+### 4. Frontend Setup
 ```bash
 cd frontend
 
