@@ -66,9 +66,29 @@ export default function Home() {
     };
 
     if (!ready || isLoading) {
-        return <div className="flex h-screen items-center justify-center text-white bg-brand-dark">
-            <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="w-12 h-12 rounded-full border-4 border-brand-primary border-t-transparent animate-spin" />
-        </div>;
+        return (
+            <div className="flex h-screen flex-col items-center justify-center text-white bg-brand-dark gap-6">
+                <div className="relative">
+                    <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                        className="w-16 h-16 rounded-full border-2 border-brand-primary/20 border-t-brand-primary shadow-[0_0_15px_rgba(5,150,105,0.3)]"
+                    />
+                    <motion.div
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                        className="absolute inset-0 bg-brand-primary rounded-full blur-xl"
+                    />
+                </div>
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-gray-400 font-medium tracking-widest text-xs uppercase animate-pulse"
+                >
+                    Laddar Ostrich Hangman...
+                </motion.p>
+            </div>
+        );
     }
 
     return (

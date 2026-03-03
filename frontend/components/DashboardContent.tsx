@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, GameMetadata } from '@/types/game';
+import { useToast } from '@/components/Toast';
 
 interface DashboardContentProps {
     user: User;
@@ -24,9 +25,10 @@ export default function DashboardContent({
     onRemoveGame
 }: DashboardContentProps) {
     const [gameIdInput, setGameIdInput] = useState('');
+    const { showToast } = useToast();
 
     const handleJoinSubmit = () => {
-        if (!gameIdInput) return alert('Vänligen ange ett Spel-ID');
+        if (!gameIdInput) return showToast('Vänligen ange ett Spel-ID', 'error');
         onJoinGame(gameIdInput.toUpperCase());
     };
 

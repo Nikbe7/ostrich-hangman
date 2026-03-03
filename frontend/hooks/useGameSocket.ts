@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSocket } from '@/hooks/useSocket';
 import { Game } from '@/types/game';
+import { useToast } from '@/components/Toast';
 
 export function useGameSocket(gameId: string, sessionId: string, name: string) {
     const { socket, isConnected } = useSocket();
@@ -8,6 +9,7 @@ export function useGameSocket(gameId: string, sessionId: string, name: string) {
     const [error, setError] = useState('');
     const [notification, setNotification] = useState('');
     const [showConfetti, setShowConfetti] = useState(false);
+    const { showToast } = useToast();
 
     useEffect(() => {
         if (!socket) return;
@@ -28,11 +30,13 @@ export function useGameSocket(gameId: string, sessionId: string, name: string) {
 
         const handleError = (msg: string) => {
             setError(msg);
+            showToast(msg, 'error');
             setTimeout(() => setError(''), 5000);
         };
 
         const handleNotification = (msg: string) => {
             setNotification(msg);
+            showToast(msg, 'info');
             setTimeout(() => setNotification(''), 3000);
         };
 

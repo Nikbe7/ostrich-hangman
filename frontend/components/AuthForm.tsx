@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { loginUser, registerUser, setToken, setUser } from '../utils/auth';
 import { AuthResponse } from '../types/game';
+import { useToast } from './Toast';
 
 interface AuthFormProps {
     onLogin: () => void;
@@ -15,6 +16,7 @@ export default function AuthForm({ onLogin }: AuthFormProps) {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const { showToast } = useToast();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,12 +25,14 @@ export default function AuthForm({ onLogin }: AuthFormProps) {
 
         if (!username || !password) {
             setError('Fyll i alla fält.');
+            showToast('Fyll i alla fält.', 'error');
             setLoading(false);
             return;
         }
 
         if (!isLogin && password !== confirmPassword) {
             setError('Lösenorden matchar inte.');
+            showToast('Lösenorden matchar inte.', 'error');
             setLoading(false);
             return;
         }
@@ -41,12 +45,17 @@ export default function AuthForm({ onLogin }: AuthFormProps) {
             if (result.success && result.session && result.user) {
                 setToken(result.session.access_token);
                 setUser(result.user);
+                showToast(isLogin ? 'Välkommen tillbaka!' : 'Konto skapat!', 'success');
                 onLogin();
             } else {
-                setError(result.error || 'Något gick fel.');
+                const msg = result.error || 'Något gick fel.';
+                setError(msg);
+                showToast(msg, 'error');
             }
         } catch (err) {
-            setError('Ett fel uppstod.');
+            const msg = 'Ett fel uppstod.';
+            setError(msg);
+            showToast(msg, 'error');
         } finally {
             setLoading(false);
         }
