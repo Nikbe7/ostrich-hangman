@@ -3,6 +3,9 @@ import asyncio
 import time
 from typing import Union
 from google import genai
+import logging
+
+logger = logging.getLogger("ai_validator")
 
 # Load Gemini client
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -11,7 +14,7 @@ client = None
 if api_key:
     client = genai.Client(api_key=api_key)
 else:
-    print("WARNING: GEMINI_API_KEY not found in environment. AI Word Validation will be disabled.")
+    logger.warning("GEMINI_API_KEY not found in environment. AI Word Validation will be disabled.")
 
 class AIRateLimiter:
     """
@@ -50,7 +53,7 @@ async def validate_word_with_ai(word: str) -> Union[bool, str]:
 
     # Check rate limit first
     if not await ai_limiter.consume():
-        print(f"AI Rate Limit exceeded for word '{word}'")
+        logger.warning("AI Rate Limit exceeded for word '%s'", word)
         return "RATE_LIMITED"
         
     prompt = (
@@ -80,9 +83,9 @@ async def validate_word_with_ai(word: str) -> Union[bool, str]:
         elif answer == "NEJ":
             return False
         else:
-            print(f"AI Validator returned unexpected response: '{response.text}' for word '{word}'")
+            logger.warning("AI Validator returned unexpected response: '%s' for word '%s'", response.text, word)
             return False
             
     except Exception as e:
-        print(f"AI Validator error: {e}")
+        logger.error("AI Validator error: %s", e)
         return False
