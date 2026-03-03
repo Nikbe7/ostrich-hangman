@@ -53,6 +53,7 @@ class AuthManager:
             "id": user_id,
             "username": username.strip(), # Keep original casing for display
             "password_hash": password_hash,
+            "salt": "bcrypt_managed", # Satisfy legacy NOT NULL constraint
             "games": [] # Persistent list of joined games
         }
         
