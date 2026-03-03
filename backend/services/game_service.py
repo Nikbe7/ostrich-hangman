@@ -289,6 +289,17 @@ class GameLobby:
             self.games[game_id] = GameManager(game_id)
         return self.games[game_id]
 
+    def count_games_for_user(self, user_id: str) -> int:
+        """Count how many active games in the lobby have the given user as a player."""
+        count = 0
+        for game in self.games.values():
+            if user_id in game.players:
+                count += 1
+        return count
+
+
+# Maximum number of active games an authenticated user can be the creator of
+MAX_GAMES_PER_USER = 10
 
 # Global lobby instance
 game_lobby = GameLobby()

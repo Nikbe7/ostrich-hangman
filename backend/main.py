@@ -2,7 +2,7 @@ import socketio
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from .services.game_service import game_lobby
+from .services.game_service import game_lobby, MAX_GAMES_PER_USER
 from .services.auth_service import AuthManager
 from .routers import auth, user
 import os
@@ -71,6 +71,16 @@ async def join_game(sid, data):
             name = data.get('playerName')
 
         if uuid and name:
+            # Limit active games for authenticated users creating a new room
+            is_new_game = game_id not in game_lobby.games
+            if user and is_new_game:
+                current_game_count = game_lobby.count_games_for_user(uuid)
+                if current_game_count >= MAX_GAMES_PER_USER:
+                    return {
+                        'status': 'error',
+                        'message': f'Du har redan {current_game_count} aktiva spel. Max {MAX_GAMES_PER_USER} spel per användare.'
+                    }
+
             # Join the Socket.IO room for this game
             await sio.enter_room(sid, game_id)
             game = game_lobby.get_game(game_id)
