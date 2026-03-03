@@ -4,6 +4,7 @@ python-socketio
 supabase
 python-dotenv
 websockets
+google-genai
 
 # Testing
 pytest
