@@ -26,6 +26,7 @@ app.add_middleware(
 
 # --- Base Route for Health Checks ---
 @app.get("/")
+@app.head("/")
 async def root():
     return {"status": "ok", "message": "Ostrich Hangman API is running"}
 
