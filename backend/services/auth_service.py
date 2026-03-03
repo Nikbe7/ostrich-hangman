@@ -28,7 +28,11 @@ class AuthManager:
 
     @staticmethod
     def _verify_password(plain_password: str, hashed_password: str) -> bool:
-        return pwd_context.verify(plain_password, hashed_password)
+        try:
+            return pwd_context.verify(plain_password, hashed_password)
+        except Exception:
+            # Fallback for legacy hashes or malformed hashes to prevent 500 error
+            return False
 
     @staticmethod
     def register(username: str, password: str) -> Dict[str, Any]:
