@@ -18,8 +18,9 @@ test('AuthForm toggles between login and register', () => {
     expect(screen.getByRole('heading', { name: 'Logga in' })).toBeInTheDocument();
 
     // Toggle to register
-    const toggleBtn = screen.getByText(/Skapa ett här/i);
+    const toggleBtn = screen.getByRole('button', { name: /Registrera dig/i });
     fireEvent.click(toggleBtn);
 
-    expect(screen.getByText('Registrera')).toBeInTheDocument();
+    // The register button text
+    expect(screen.getByRole('button', { name: 'Registrera' })).toBeInTheDocument();
 });

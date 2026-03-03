@@ -13,10 +13,9 @@ def mock_supabase_client():
 
 def test_register_success(mock_supabase_client):
     mock_select = MagicMock()
-    mock_select.ilike.return_value.execute.return_value = MagicMock(data=[])
     mock_insert = MagicMock()
     mock_insert.execute.return_value = MagicMock(data=[{"id": "123"}])
-    
+
     def table_side_effect(name):
         mock_table = MagicMock()
         if name == "app_users":
@@ -26,16 +25,17 @@ def test_register_success(mock_supabase_client):
             mock_table.insert.return_value = MagicMock()
         return mock_table
     mock_supabase_client.table.side_effect = table_side_effect
-    
-    with patch.object(AuthManager, "_hash_password", return_value=("salt", "hash")):
+
+    with patch.object(AuthManager, "_hash_password", return_value="$2b$12$fakehash"):
         mock_select.ilike.return_value.execute.side_effect = [
-            MagicMock(data=[]), # register check
-            MagicMock(data=[{"id": "123", "username": "testuser", "salt": "salt", "password_hash": "hash"}]) # login fetch
+            MagicMock(data=[]),  # register check
+            MagicMock(data=[{"id": "123", "username": "testuser", "password_hash": "$2b$12$fakehash"}])  # login fetch
         ]
-        response = client.post("/api/auth/register", json={"username": "testuser", "password": "password123"})
-        assert response.status_code == 200
-        data = response.json()
-        assert data["success"] is True
+        with patch.object(AuthManager, "_verify_password", return_value=True):
+            response = client.post("/api/auth/register", json={"username": "testuser", "password": "password123"})
+            assert response.status_code == 200
+            data = response.json()
+            assert data["success"] is True
 
 def test_register_duplicate(mock_supabase_client):
     mock_select = MagicMock()
@@ -51,9 +51,9 @@ def test_register_duplicate(mock_supabase_client):
 def test_login_success(mock_supabase_client):
     mock_select = MagicMock()
     mock_select.ilike.return_value.execute.return_value = MagicMock(data=[
-        {"id": "123", "username": "testuser", "salt": "salt", "password_hash": "hash"}
+        {"id": "123", "username": "testuser", "password_hash": "$2b$12$fakehash"}
     ])
-    
+
     def table_side_effect(name):
         mock_table = MagicMock()
         if name == "app_users":
@@ -63,7 +63,7 @@ def test_login_success(mock_supabase_client):
         return mock_table
     mock_supabase_client.table.side_effect = table_side_effect
 
-    with patch.object(AuthManager, "_hash_password", return_value=("salt", "hash")):
+    with patch.object(AuthManager, "_verify_password", return_value=True):
         response = client.post("/api/auth/login", json={"username": "testuser", "password": "password123"})
         assert response.status_code == 200
         assert response.json()["success"] is True
@@ -71,10 +71,10 @@ def test_login_success(mock_supabase_client):
 def test_login_invalid(mock_supabase_client):
     mock_select = MagicMock()
     mock_select.ilike.return_value.execute.return_value = MagicMock(data=[
-        {"id": "123", "username": "testuser", "salt": "salt", "password_hash": "correct-hash"}
+        {"id": "123", "username": "testuser", "password_hash": "$2b$12$fakehash"}
     ])
     mock_supabase_client.table.return_value.select.return_value = mock_select
 
-    with patch.object(AuthManager, "_hash_password", return_value=("salt", "wrong-hash")):
+    with patch.object(AuthManager, "_verify_password", return_value=False):
         response = client.post("/api/auth/login", json={"username": "testuser", "password": "wrongpassword"})
         assert response.status_code == 401
