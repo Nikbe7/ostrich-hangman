@@ -250,6 +250,8 @@ export default function Home() {
 
                                 <div className="flex flex-col sm:flex-row gap-3 relative">
                                     <input
+                                        id="gameId"
+                                        name="gameId"
                                         type="text"
                                         value={gameIdInput}
                                         onChange={(e) => setGameIdInput(e.target.value)}

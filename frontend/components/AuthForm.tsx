@@ -67,6 +67,8 @@ export default function AuthForm({ onLogin }: AuthFormProps) {
                 <div>
                     <label className="block text-sm font-medium mb-1 text-gray-300">Användarnamn</label>
                     <input
+                        id="username"
+                        name="username"
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
@@ -80,6 +82,8 @@ export default function AuthForm({ onLogin }: AuthFormProps) {
                     <label className="block text-sm font-medium mb-1 text-gray-300">Lösenord</label>
                     <div className="relative">
                         <input
+                            id="password"
+                            name="password"
                             type={showPassword ? "text" : "password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -103,6 +107,8 @@ export default function AuthForm({ onLogin }: AuthFormProps) {
                         <label className="block text-sm font-medium mb-1 text-gray-300">Bekräfta lösenord</label>
                         <div className="relative">
                             <input
+                                id="confirmPassword"
+                                name="confirmPassword"
                                 type={showPassword ? "text" : "password"}
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}

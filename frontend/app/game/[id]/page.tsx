@@ -497,6 +497,8 @@ export default function GamePage() {
                                             <label className="text-sm font-medium text-gray-300 text-center">Skriv ett ord för de andra att gissa:</label>
                                             <div className="relative">
                                                 <input
+                                                    id="wordInput"
+                                                    name="wordInput"
                                                     type="text"
                                                     value={wordInput}
                                                     onChange={(e) => setWordInput(e.target.value.replace(/[^a-zA-ZåäöÅÄÖ]/g, ''))}
