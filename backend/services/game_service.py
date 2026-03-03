@@ -10,8 +10,8 @@ from ..schemas import GameStateModel, PlayerState
 logger = logging.getLogger("game_service")
 
 # Constants
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, 'data')
+BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BACKEND_DIR, 'data')
 WORDS_FILE = os.path.join(DATA_DIR, 'words.txt')
 
 # Load words ONCE at module level (shared across all games)
@@ -240,8 +240,12 @@ class GameManager:
                     
         if not is_valid:
             if is_valid == "RATE_LIMITED":
-                return False, "AI-validering är tillfälligt begränsad på grund av hög belastning. Prova ett enklare ord som finns i ordlistan."
-            return False, f"Ordet '{word_upper}' finns inte i ordlistan eller godkändes inte av AI."
+                # GRACE FALLBACK: If AI is rate limited, we allow the word but log it.
+                # This prevents the game from being stuck if the API quota is hit.
+                logger.warning("AI Rate Limited. Allowing word '%s' by fallback grace.", word_upper)
+                is_valid = True
+            else:
+                return False, f"Ordet '{word_upper}' finns inte i ordlistan eller godkändes inte av AI."
 
         self.word = word_upper
         self.guessed = []

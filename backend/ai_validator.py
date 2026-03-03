@@ -88,5 +88,10 @@ async def validate_word_with_ai(word: str) -> Union[bool, str]:
             return False
             
     except Exception as e:
+        error_msg = str(e).upper()
+        if "429" in error_msg or "QUOTA" in error_msg or "EXHAUSTED" in error_msg:
+            logger.warning("AI Rate Limit (Gemini API 429) hit: %s", e)
+            return "RATE_LIMITED"
+            
         logger.error("AI Validator error: %s", e)
         return False
