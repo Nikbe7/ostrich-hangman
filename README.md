@@ -7,6 +7,8 @@ A modern real-time multiplayer implementation of the classic Hangman game, built
 - **Real-Time Multiplayer**: Play together instantly using WebSockets via `socket.io-client`.
 - **Dynamic AI Validation**: Words are validated through a Google Gemini Flash API pipeline to ensure they are real (and family-friendly) words before being committed to the database.
 - **Smart Game Persistence**: Sessions and user accounts are managed via Supabase enabling you to rejoin disconnected games.
+- **Inactivity Warnings**: Visual indicators (⚠️) appear in the lobby for games nearing the 30-day auto-pruning limit.
+- **Auto-Cleanup**: Background tasks automatically prune inactive games and session caches to maintain server performance.
 - **Modern Responsive UI**: Fully responsive fixed layout built with Tailwind CSS, Framer Motion for beautiful animations, and a customized aesthetic (`#059669` brand primary).
 - **Accounts & History**: Create an account to track your active games and history across devices.
 
@@ -26,6 +28,7 @@ The project is split into two main directories:
 - **WebSockets**: [python-socketio](https://python-socketio.readthedocs.io/)
 - **Database**: [Supabase](https://supabase.com/) (PostgreSQL backend)
 - **AI Integration**: Custom validation script utilizing the Google Gemini API (`ai_validator.py`)
+- **Logging**: Standardized Python `logging` with structured formats for production monitoring.
 - **Hosting**: Deployed on [Render](https://render.com/)
 
 ---
@@ -58,7 +61,7 @@ cd backend
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+# Install dependencies (Pinned for stability)
 pip install -r requirements.txt
 
 # Setup Environment Variables
