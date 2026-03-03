@@ -58,8 +58,7 @@ async def startup_event():
 
 
 # --- Base Route for Health Checks ---
-@app.get("/")
-@app.head("/")
+@app.get("/", methods=["GET", "HEAD"])
 async def root():
     return {"status": "ok", "message": "Ostrich Hangman API is running"}
 
