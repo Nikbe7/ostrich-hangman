@@ -2,10 +2,13 @@ import os
 import json
 import secrets
 import uuid
+import logging
 from passlib.context import CryptContext
 from ..core.supabase import supabase
 from typing import Dict, Any, Optional
 from datetime import datetime
+
+logger = logging.getLogger("auth_service")
 
 # Setup passlib CryptContext for bcrypt hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -128,7 +131,7 @@ class AuthManager:
             _session_cache[token] = cache_user
             return cache_user
         except Exception as e:
-            print(f"Error fetching session from Supabase: {e}")
+            logger.error("Error fetching session from Supabase: %s", e)
             return None
 
     @staticmethod
@@ -141,7 +144,7 @@ class AuthManager:
                     games.insert(0, game_id)
                     supabase.table('app_users').update({'games': games}).eq('id', user_id).execute()
         except Exception as e:
-            print(f"Failed to add game to user: {e}")
+            logger.error("Failed to add game to user: %s", e)
 
     @staticmethod
     def remove_game_from_user(user_id: str, game_id: str):
@@ -153,7 +156,7 @@ class AuthManager:
                     games.remove(game_id)
                     supabase.table('app_users').update({'games': games}).eq('id', user_id).execute()
         except Exception as e:
-            print(f"Failed to remove game from user: {e}")
+            logger.error("Failed to remove game from user: %s", e)
 
     @staticmethod
     def get_user_games(user_id: str) -> list[str]:
@@ -162,18 +165,13 @@ class AuthManager:
             if res.data and len(res.data) > 0:
                 return res.data[0].get('games') or []
         except Exception as e:
-            print(f"Failed to get user games: {e}")
+            logger.error("Failed to get user games: %s", e)
         return []
 
-    @staticmethod
-    def cleanup_session_cache():
-        """
-        Prunes the in-memory session cache. 
-        Since we don't track TTL on tokens yet, we just clear older entries 
-        if the cache gets too large, or clear it entirely to force a refresh.
-        For now, let's just log and clear if > 1000 entries.
-        """
+    @classmethod
+    def cleanup_session_cache(cls):
+        """Clear cache if it grows too large (prevent memory leak)"""
         global _session_cache
         if len(_session_cache) > 1000:
-            print(f"[CLEANUP] Clearing large session cache ({len(_session_cache)} entries)")
-            _session_cache = {}
+            logger.info("Clearing large session cache (%d entries)", len(_session_cache))
+            _session_cache.clear()

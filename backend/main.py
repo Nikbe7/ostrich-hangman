@@ -1,5 +1,6 @@
 import socketio
 import asyncio
+import logging
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,9 +9,17 @@ from .services.auth_service import AuthManager
 from .routers import auth, user
 import os
 
+# Configure Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[logging.StreamHandler()]
+)
+logger = logging.getLogger("main")
+
 # Create Socket.IO server (Async)
 sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
-app = FastAPI()
+app = FastAPI(title="Ostrich Hangman API")
 
 # Mount Socket.IO app
 socket_app = socketio.ASGIApp(sio, app)
@@ -28,10 +37,9 @@ app.add_middleware(
 async def cleanup_task():
     """Background task that runs every hour to prune inactive resources."""
     while True:
+        await asyncio.sleep(3600)  # Run every hour
+        logger.info("Starting scheduled resource pruning...")
         try:
-            await asyncio.sleep(3600) # Wait 1 hour
-            print("[CLEANUP] Starting scheduled resource pruning...")
-            
             # Prune inactive games (30 days)
             removed_games = game_lobby.cleanup_inactive_games(max_idle_days=30)
             
@@ -39,9 +47,9 @@ async def cleanup_task():
             AuthManager.cleanup_session_cache()
             
             if removed_games > 0:
-                print(f"[CLEANUP] Successfully removed {removed_games} inactive games.")
+                logger.info("Successfully removed %d inactive games.", removed_games)
         except Exception as e:
-            print(f"[CLEANUP] Error in background task: {e}")
+            logger.error("Error in background task: %s", e)
 
 @app.on_event("startup")
 async def startup_event():
@@ -63,22 +71,23 @@ app.include_router(user.router)
 
 @sio.event
 async def connect(sid, environ, auth=None):
-    print(f"[CONNECT] sid={sid}, auth={auth}")
+    logger.info("Socket connected: sid=%s, auth=%s", sid, auth)
     user = None
     if auth and 'token' in auth:
         token = auth['token']
         user = AuthManager.get_user_by_token(token)
         if user:
-            print(f"[CONNECT] Authenticated user: {user['username']} ({user['id']})")
+            logger.info("Authenticated user: %s (%s)", user['username'], user['id'])
             # Store user info in session
-            await sio.save_session(sid, {'user': user})
+            sio.save_session(sid, {'user': user})
+            return True # Indicate successful authentication
     
-    if not user:
-        print("[CONNECT] Anonymous connection")
+    logger.info("Anonymous connection: sid=%s", sid)
+    return True # Allow anonymous connections for now
 
 @sio.event
 async def join_game(sid, data):
-    print(f"[JOIN_GAME] sid={sid}, data={data}")
+    logger.info("join_game: sid=%s, data=%s", sid, data)
     try:
         game_id = data.get('gameId', 'global')
         
@@ -115,18 +124,20 @@ async def join_game(sid, data):
             if user:
                 AuthManager.add_game_to_user(uuid, game_id)
 
-            state = game.get_state_for_frontend()
-            print(f"[JOIN_GAME] Emitting update_game to room={game_id}, players={len(state['players'])}")
+            # Emit current state to everyone in the room (including the new joiner)
+            state = game.get_state()
+            logger.info("Emitting update_game to room=%s, players=%d", game_id, len(state['players']))
             await sio.emit('update_game', state, room=game_id)
-            response = {'status': 'ok', 'message': 'Joined successfully'}
-            print(f"[JOIN_GAME] Returning: {response}")
+            
+            response = {"success": True, "game_id": game_id, "state": state}
+            logger.info("Returning join_game response for sid=%s", sid)
             return response
         else:
-            print(f"[JOIN_GAME] Missing uuid or name, ignoring")
-            return {'status': 'error', 'message': 'Missing uuid or name'}
+            logger.warning("join_game failed: Missing uuid or name")
+            return {"success": False, "error": "Missing uuid or name"}
     except Exception as e:
-        print(f"[JOIN_GAME] Error: {e}")
-        return {'status': 'error', 'message': str(e)}
+        logger.error("Error in join_game: %s", e)
+        return {"success": False, "error": str(e)}
 
 @sio.event
 async def guess_letter(sid, data):

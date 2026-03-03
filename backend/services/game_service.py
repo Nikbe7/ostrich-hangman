@@ -4,7 +4,10 @@ import os
 import asyncio
 from typing import Dict, List, Optional, Set, Any, Union, cast, Tuple
 from datetime import datetime
+import logging
 from ..schemas import GameStateModel, PlayerState
+
+logger = logging.getLogger("game_service")
 
 # Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -23,12 +26,12 @@ def _load_words():
         return
     try:
         with open(WORDS_FILE, 'r', encoding='utf-8') as f:
-            _valid_words_list = [w.strip().upper() for w in f if w.strip()]
+            _valid_words_list = [line.strip().upper() for line in f if line.strip()]
             _valid_words_set = set(_valid_words_list)
-        print(f"Loaded {len(_valid_words_list)} words into memory.")
+        logger.info("Loaded %d words into memory.", len(_valid_words_list))
     except Exception as e:
-        print(f"Error loading words: {e}")
-        _valid_words_list = ["ERROR"]
+        logger.error("Error loading words: %s", e)
+        _valid_words_list = ["OSTRICH", "HANGMAN", "PYTHON", "FASTAPI"]
         _valid_words_set = {"ERROR"}
 
 _load_words()
@@ -207,12 +210,12 @@ class GameManager:
         # 3. Validation 3: Dictionary & AI Fallback
         is_valid = False
         
-        global _valid_words_set # Ensure we modify the global set
+        global _valid_words_list, _valid_words_set # Ensure we modify the global set
         if word_upper in _valid_words_set:
             is_valid = True
         else:
             # Word not in SAOL local text file! Let's ask Gemini.
-            print(f"[GAME] Word '{word_upper}' not in local list. Asking AI...")
+            logger.info("Word '%s' not in local list. Asking AI...", word_upper)
             self.dynamic_ai_status = f"Validerar '{word_upper}' med AI..."
             
             # Since choose_word is now async, we can await the AI validation
@@ -222,9 +225,10 @@ class GameManager:
             self.dynamic_ai_status = None
             
             if is_valid:
-                print(f"[GAME] AI verified '{word_upper}'! Adding to dictionary.")
+                logger.info("AI verified '%s'! Adding to dictionary.", word_upper)
                 # Add to instance memory
                 _valid_words_set.add(word_upper)
+                _valid_words_list.append(word_upper) # Also add to list for random choice
                 
                 # Append to permanent file
                 # Use the global WORDS_FILE constant
@@ -232,7 +236,7 @@ class GameManager:
                     with open(WORDS_FILE, 'a', encoding='utf-8') as f:
                         f.write(word_upper + "\n")
                 except Exception as e:
-                    print(f"Failed to save new AI word to file: {e}")
+                    logger.error("Failed to save new AI word to file: %s", e)
                     
         if not is_valid:
             if is_valid == "RATE_LIMITED":
@@ -309,7 +313,7 @@ class GameLobby:
                 to_remove.append(game_id)
                 
         for game_id in to_remove:
-            print(f"[CLEANUP] Removing inactive game: {game_id}")
+            logger.info("Removing inactive game: %s", game_id)
             del self.games[game_id]
             
         return len(to_remove)
