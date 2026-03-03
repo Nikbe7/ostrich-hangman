@@ -7,36 +7,52 @@ import { getToken } from '../utils/auth';
 // In prod: env var NEXT_PUBLIC_BACKEND_URL
 const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
+let globalSocket: Socket | null = null;
+
 export const useSocket = (namespace = '') => {
-    const [socket, setSocket] = useState<Socket | null>(null);
-    const [isConnected, setIsConnected] = useState(false);
+    const [socket, setSocket] = useState<Socket | null>(globalSocket);
+    const [isConnected, setIsConnected] = useState(globalSocket?.connected || false);
 
     useEffect(() => {
         const token = getToken();
 
-        // Prevent multiple connections
-        const socketInstance = io(`${SOCKET_URL}${namespace}`, {
-            autoConnect: true,
-            reconnection: true,
-            auth: {
-                token: token
-            }
-        });
+        if (!globalSocket) {
+            globalSocket = io(`${SOCKET_URL}${namespace}`, {
+                autoConnect: true,
+                reconnection: true,
+                transports: ['websocket'], // Force WebSocket for speed
+                upgrade: false,             // Skip HTTP long-polling upgrade
+                auth: {
+                    token: token
+                }
+            });
+        }
 
-        socketInstance.on('connect', () => {
+        const onConnect = () => {
             console.log('Connected to socket');
             setIsConnected(true);
-        });
+        };
 
-        socketInstance.on('disconnect', () => {
+        const onDisconnect = () => {
             console.log('Disconnected from socket');
             setIsConnected(false);
-        });
+        };
 
-        setSocket(socketInstance);
+        globalSocket.on('connect', onConnect);
+        globalSocket.on('disconnect', onDisconnect);
+
+        // Ensure state is synced if already connected
+        if (globalSocket.connected) {
+            setIsConnected(true);
+        }
+
+        setSocket(globalSocket);
 
         return () => {
-            socketInstance.disconnect();
+            if (globalSocket) {
+                globalSocket.off('connect', onConnect);
+                globalSocket.off('disconnect', onDisconnect);
+            }
         };
     }, [namespace]);
 
