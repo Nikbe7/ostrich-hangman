@@ -40,7 +40,7 @@ try:
             f.write(line + "\n")
             
     print(f"Total words: {len(cleaned_lines)}")
-    print(f"First 10 words: {cleaned_lines[:10]}")
+    print(f"First 10 words: {list(cleaned_lines[:10])}")
     
 except Exception as e:
     print(f"Error downloading: {e}")

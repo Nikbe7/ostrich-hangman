@@ -82,9 +82,8 @@ export const SoundProvider = ({ children }: { children: ReactNode }): JSX.Elemen
     const toggleMute = () => setIsMuted(prev => !prev);
 
     return (
-        <SoundContext.Provider value= {{ isMuted, toggleMute, playCorrect, playWrong, playWin, playLoss }
-}>
-    { children }
-    </SoundContext.Provider>
+        <SoundContext.Provider value={{ isMuted, toggleMute, playCorrect, playWrong, playWin, playLoss }}>
+            {children}
+        </SoundContext.Provider>
     );
 };

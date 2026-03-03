@@ -38,7 +38,8 @@ class AIRateLimiter:
             if self.tokens >= 1.0:
                 self.tokens -= 1.0
                 return True
-            return False
+            else:
+                return False
 
 # Global instance of the rate limiter
 ai_limiter = AIRateLimiter()
