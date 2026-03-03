@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSocket } from '@/hooks/useSocket';
 import { Game } from '@/types/game';
 import { useToast } from '@/components/Toast';
+import { useSound } from '@/hooks/useSound';
 
 export function useGameSocket(gameId: string, sessionId: string, name: string) {
     const { socket, isConnected } = useSocket();
@@ -10,6 +11,7 @@ export function useGameSocket(gameId: string, sessionId: string, name: string) {
     const [notification, setNotification] = useState('');
     const [showConfetti, setShowConfetti] = useState(false);
     const { showToast } = useToast();
+    const { playCorrect, playWrong, playWin, playLoss } = useSound();
 
     useEffect(() => {
         if (!socket) return;
@@ -20,7 +22,20 @@ export function useGameSocket(gameId: string, sessionId: string, name: string) {
                     const latestHistory = updatedGame.history?.[0];
                     if (latestHistory?.winner) {
                         setShowConfetti(true);
+                        playWin();
                         setTimeout(() => setShowConfetti(false), 4000);
+                    } else {
+                        playLoss();
+                    }
+                } else if (prev && updatedGame.status === 'playing') {
+                    // Check if a guess was made
+                    if (updatedGame.guessedLetters.length > prev.guessedLetters.length) {
+                        const lastGuess = updatedGame.guessedLetters[updatedGame.guessedLetters.length - 1];
+                        if (updatedGame.word.includes(lastGuess)) {
+                            playCorrect();
+                        } else {
+                            playWrong();
+                        }
                     }
                 }
                 return updatedGame;

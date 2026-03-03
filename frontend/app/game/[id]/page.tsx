@@ -13,6 +13,7 @@ import GameHistory from '@/components/GameHistory';
 import ActivityFeed from '@/components/ActivityFeed';
 import MobileSidebar from '@/components/MobileSidebar';
 import StatusOverlay from '@/components/StatusOverlay';
+import SoundToggle from '@/components/SoundToggle';
 import { useGameSocket } from '@/hooks/useGameSocket';
 import { Player, HistoryEntry, Game } from '@/types/game';
 
@@ -123,13 +124,16 @@ export default function GamePage() {
                     ←
                 </button>
                 <span className="text-sm font-bold truncate mx-2">Rum: {gameId}</span>
-                <button
-                    onClick={() => setShowMobileSidebar(true)}
-                    className="text-gray-300 p-1.5 rounded hover:bg-white/10 transition-colors"
-                    title="Visa info"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-                </button>
+                <div className="flex items-center gap-1">
+                    <SoundToggle />
+                    <button
+                        onClick={() => setShowMobileSidebar(true)}
+                        className="text-gray-300 p-1.5 rounded hover:bg-white/10 transition-colors"
+                        title="Visa info"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+                    </button>
+                </div>
             </div>
 
             <MobileSidebar
@@ -145,16 +149,19 @@ export default function GamePage() {
             <aside className="game-sidebar bg-brand-card/50 backdrop-blur-md p-3 border-r border-white/5 flex flex-col gap-3 z-10">
                 <div className="flex items-center gap-2">
                     <h1 className="text-lg font-bold flex-1 truncate">Rum: {gameId}</h1>
-                    <button
-                        onClick={() => {
-                            navigator.clipboard.writeText(gameId);
-                            setNotification('Spel-ID kopierat!');
-                        }}
-                        className="text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 shrink-0"
-                        title="Kopiera Spel-ID"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
-                    </button>
+                    <div className="flex items-center gap-1">
+                        <SoundToggle />
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(gameId);
+                                setNotification('Spel-ID kopierat!');
+                            }}
+                            className="text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 shrink-0"
+                            title="Kopiera Spel-ID"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
+                        </button>
+                    </div>
                 </div>
 
                 {game && (

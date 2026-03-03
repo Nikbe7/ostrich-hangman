@@ -11,6 +11,8 @@ import AuthForm from '@/components/AuthForm';
 import OstrichAnimation from '@/components/OstrichAnimation';
 import Hero from '@/components/Hero';
 import DashboardContent from '@/components/DashboardContent';
+import SoundToggle from '@/components/SoundToggle';
+import { useSound } from '@/hooks/useSound';
 
 const staggerContainer = {
     hidden: { opacity: 0 },
@@ -94,6 +96,10 @@ export default function Home() {
     return (
         <main className="flex min-h-screen flex-col items-center justify-center p-6 sm:p-8 bg-brand-dark text-white relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(5,150,105,0.15),rgba(0,0,0,1)_60%)] pointer-events-none" />
+
+            <div className="absolute top-6 right-6 z-50">
+                <SoundToggle />
+            </div>
 
             <AnimatePresence>
                 {loginAnimating && (
