@@ -1,9 +1,8 @@
-'use client';
-
 import { motion, AnimatePresence } from 'framer-motion';
+import { Game } from '@/types/game';
 
 interface StatusOverlayProps {
-    game: any;
+    game: Game | null;
     sessionId: string;
     error: string;
     notification: string;

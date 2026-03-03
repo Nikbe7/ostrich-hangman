@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { loginUser, registerUser, setToken, setUser, AuthResponse } from '../utils/auth';
+import { loginUser, registerUser, setToken, setUser } from '../utils/auth';
+import { AuthResponse } from '../types/game';
 
 interface AuthFormProps {
     onLogin: () => void;

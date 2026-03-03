@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getLastGameId } from '@/utils/session';
 import { getToken, getUser, fetchUserGames } from '@/utils/auth';
+import { User, GameMetadata } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
 import AuthForm from '@/components/AuthForm';
 import OstrichAnimation from '@/components/OstrichAnimation';
@@ -21,13 +22,13 @@ const staggerContainer = {
 
 export default function Home() {
     const router = useRouter();
-    const { user, gameHistory, loading, login, logout, removeGame } = useAuth();
+    const { user, gameHistory, isLoading, login, logout, removeGame } = useAuth();
     const [ready, setReady] = useState(false);
     const [loginAnimating, setLoginAnimating] = useState(false);
-    const [pendingUser, setPendingUser] = useState<{ user: any; games: any[] } | null>(null);
+    const [pendingUser, setPendingUser] = useState<{ user: User; games: GameMetadata[] } | null>(null);
 
     useEffect(() => {
-        if (!loading) {
+        if (!isLoading) {
             const lastGameId = getLastGameId();
             if (lastGameId) {
                 router.push(`/game/${lastGameId}`);
@@ -35,7 +36,7 @@ export default function Home() {
             }
             setReady(true);
         }
-    }, [loading, router]);
+    }, [isLoading, router]);
 
     const handleLoginSuccess = async () => {
         const storedUser = getUser();
@@ -64,7 +65,7 @@ export default function Home() {
         router.push(`/game/${newGameId}`);
     };
 
-    if (!ready || loading) {
+    if (!ready || isLoading) {
         return <div className="flex h-screen items-center justify-center text-white bg-brand-dark">
             <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="w-12 h-12 rounded-full border-4 border-brand-primary border-t-transparent animate-spin" />
         </div>;

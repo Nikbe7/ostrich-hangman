@@ -1,14 +1,13 @@
-'use client';
-
 import { motion, AnimatePresence } from 'framer-motion';
 import PlayerList from '@/components/PlayerList';
 import GameHistory from '@/components/GameHistory';
+import { Game } from '@/types/game';
 
 interface MobileSidebarProps {
     isOpen: boolean;
     onClose: () => void;
     gameId: string;
-    game: any;
+    game: Game | null;
     sessionId: string;
     onLeave: () => void;
 }

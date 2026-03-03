@@ -1,25 +1,6 @@
+import { User, AuthResponse, GameMetadata } from '@/types/game';
+
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-
-export interface User {
-    id: string;
-    username: string;
-    email: string;
-}
-
-export interface AuthResponse {
-    success: boolean;
-    user?: User;
-    session?: {
-        access_token: string;
-        refresh_token: string;
-    };
-    error?: string;
-}
-
-export interface GameItem {
-    id: string;
-    last_activity: number;
-}
 
 export const registerUser = async (username: string, password: string): Promise<AuthResponse> => {
     try {
@@ -55,7 +36,7 @@ export const loginUser = async (username: string, password: string): Promise<Aut
     }
 };
 
-export const fetchUserGames = async (token: string): Promise<GameItem[]> => {
+export const fetchUserGames = async (token: string): Promise<GameMetadata[]> => {
     try {
         const response = await fetch(`${API_URL}/api/user/games`, {
             method: 'GET',

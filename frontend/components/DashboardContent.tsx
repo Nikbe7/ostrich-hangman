@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, GameItem } from '@/utils/auth';
+import { User, GameMetadata } from '@/types/game';
 
 interface DashboardContentProps {
     user: User;
-    gameHistory: GameItem[];
+    gameHistory: GameMetadata[];
     onLogout: () => void;
     onCreateGame: () => void;
     onJoinGame: (gameId: string) => void;

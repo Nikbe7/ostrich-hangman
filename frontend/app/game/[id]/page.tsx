@@ -14,6 +14,7 @@ import ActivityFeed from '@/components/ActivityFeed';
 import MobileSidebar from '@/components/MobileSidebar';
 import StatusOverlay from '@/components/StatusOverlay';
 import { useGameSocket } from '@/hooks/useGameSocket';
+import { Player, HistoryEntry, Game } from '@/types/game';
 
 const FUN_FACTS = [
     "Strutsar kan springa snabbare än hästar och hanarna kan ryta som lejon.",

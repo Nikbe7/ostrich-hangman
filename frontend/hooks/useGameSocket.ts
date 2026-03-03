@@ -1,37 +1,6 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { useSocket } from '@/hooks/useSocket';
-
-interface Player {
-    sessionId: string;
-    name: string;
-    isOnline: boolean;
-    lastSeen: string;
-    score: number;
-}
-
-interface HistoryEntry {
-    word: string;
-    winner: string | null;
-    chooser: string | null;
-    total_guesses?: number;
-}
-
-interface Game {
-    gameId: string;
-    word: string;
-    guessedLetters: string[];
-    wrongGuesses: number;
-    status: 'waiting' | 'choosing' | 'playing' | 'finished';
-    players: Player[];
-    wordChooser: string;
-    history: HistoryEntry[];
-    guessLog: { name: string; letter: string; correct: boolean }[];
-    winnerId: string | null;
-    message: string;
-    dynamic_ai_status?: string | null;
-}
+import { Game } from '@/types/game';
 
 export function useGameSocket(gameId: string, sessionId: string, name: string) {
     const { socket, isConnected } = useSocket();

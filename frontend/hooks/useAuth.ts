@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { User, GameItem, getToken, getUser, logout as authLogout, fetchUserGames, removeUserGame } from '@/utils/auth';
+import { useState, useEffect, useCallback } from 'react';
+import { getToken, getUser, logout as apiLogout, fetchUserGames, removeUserGame } from '@/utils/auth';
 import { getGameHistory, removeGameFromHistory as removeLocalGame } from '@/utils/session';
+import { User, GameMetadata } from '@/types/game';
 
 export function useAuth() {
     const [user, setUser] = useState<User | null>(null);
-    const [gameHistory, setGameHistory] = useState<GameItem[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [gameHistory, setGameHistory] = useState<GameMetadata[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -22,19 +23,19 @@ export function useAuth() {
                 const localGames = getGameHistory();
                 setGameHistory(localGames.map(id => ({ id, last_activity: Date.now() / 1000 })));
             }
-            setLoading(false);
+            setIsLoading(false);
         };
 
         loadInitialData();
     }, []);
 
-    const login = (userData: User, games: GameItem[]) => {
+    const login = (userData: User, games: GameMetadata[]) => {
         setUser(userData);
         setGameHistory(games);
     };
 
     const logout = () => {
-        authLogout();
+        apiLogout();
         setUser(null);
         setGameHistory([]);
     };
@@ -58,7 +59,7 @@ export function useAuth() {
     return {
         user,
         gameHistory,
-        loading,
+        isLoading,
         login,
         logout,
         removeGame,
