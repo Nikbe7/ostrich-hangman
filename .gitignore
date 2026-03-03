@@ -58,3 +58,9 @@ Desktop.ini
 
 # Logs
 *.log
+
+# Coverage
+.coverage
+htmlcov/
+coverage/
+.pytest_cache/
