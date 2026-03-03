@@ -11,6 +11,9 @@ A modern real-time multiplayer implementation of the classic Hangman game, built
 - **Auto-Cleanup**: Background tasks automatically prune inactive games and session caches to maintain server performance.
 - **Modern Responsive UI**: Fully responsive fixed layout built with Tailwind CSS, Framer Motion for beautiful animations, and a customized aesthetic (`#059669` brand primary).
 - **Accounts & History**: Create an account to track your active games and history across devices.
+- **Dynamic Feedback**: Centralized toast notification system for errors, warnings, and success messages.
+- **Sound Effects**: Procedurally generated audio feedback for guesses, wins, and losses (with mute toggle).
+- **Type Safety**: Shared TypeScript definitions synchronize frontend and backend data structures.
 
 ## 🏗️ Architecture
 
@@ -40,6 +43,7 @@ The project is split into two main directories:
 - Python (3.10+)
 - A Supabase account and project
 - A Google API key for Gemini AI
+- A browser supporting Web Audio API (for sound effects)
 
 ### 1. Clone the repository
 ```bash

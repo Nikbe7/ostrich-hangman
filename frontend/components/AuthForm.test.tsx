@@ -11,6 +11,13 @@ vi.mock('next/navigation', () => ({
     },
 }));
 
+// Mock the toast hook
+vi.mock('@/components/Toast', () => ({
+    useToast: () => ({
+        showToast: vi.fn(),
+    }),
+}));
+
 test('AuthForm toggles between login and register', () => {
     render(<AuthForm onLogin={vi.fn()} />);
 
