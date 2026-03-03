@@ -164,3 +164,16 @@ class AuthManager:
         except Exception as e:
             print(f"Failed to get user games: {e}")
         return []
+
+    @staticmethod
+    def cleanup_session_cache():
+        """
+        Prunes the in-memory session cache. 
+        Since we don't track TTL on tokens yet, we just clear older entries 
+        if the cache gets too large, or clear it entirely to force a refresh.
+        For now, let's just log and clear if > 1000 entries.
+        """
+        global _session_cache
+        if len(_session_cache) > 1000:
+            print(f"[CLEANUP] Clearing large session cache ({len(_session_cache)} entries)")
+            _session_cache = {}

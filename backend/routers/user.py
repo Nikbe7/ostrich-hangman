@@ -13,7 +13,9 @@ async def get_user_games(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid token")
     
     games = AuthManager.get_user_games(user["id"])
-    return {"success": True, "games": games}
+    from ..services.game_service import game_lobby
+    metadata = game_lobby.get_games_metadata(games)
+    return {"success": True, "games": metadata}
 
 @router.delete("/games/{game_id}")
 async def remove_user_game(game_id: str, authorization: str = Header(None)):

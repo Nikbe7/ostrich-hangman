@@ -16,6 +16,11 @@ export interface AuthResponse {
     error?: string;
 }
 
+export interface GameItem {
+    id: string;
+    last_activity: number;
+}
+
 export const registerUser = async (username: string, password: string): Promise<AuthResponse> => {
     try {
         const response = await fetch(`${API_URL}/api/auth/register`, {
@@ -50,7 +55,7 @@ export const loginUser = async (username: string, password: string): Promise<Aut
     }
 };
 
-export const fetchUserGames = async (token: string): Promise<string[]> => {
+export const fetchUserGames = async (token: string): Promise<GameItem[]> => {
     try {
         const response = await fetch(`${API_URL}/api/user/games`, {
             method: 'GET',

@@ -8,7 +8,7 @@ import {
     getLastGameId, clearLastGameId,
     getGameHistory, removeGameFromHistory
 } from '@/utils/session';
-import { getToken, getUser, User, logout, fetchUserGames, removeUserGame } from '@/utils/auth';
+import { getToken, getUser, User, logout, fetchUserGames, removeUserGame, GameItem } from '@/utils/auth';
 import AuthForm from '@/components/AuthForm';
 import OstrichAnimation from '@/components/OstrichAnimation';
 
@@ -29,10 +29,10 @@ export default function Home() {
     const router = useRouter();
     const [user, setUserState] = useState<User | null>(null);
     const [gameIdInput, setGameIdInput] = useState('');
-    const [gameHistory, setGameHistory] = useState<string[]>([]);
+    const [gameHistory, setGameHistory] = useState<GameItem[]>([]);
     const [ready, setReady] = useState(false);
     const [loginAnimating, setLoginAnimating] = useState(false);
-    const [pendingUser, setPendingUser] = useState<{ user: User; games: string[] } | null>(null);
+    const [pendingUser, setPendingUser] = useState<{ user: User; games: GameItem[] } | null>(null);
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -44,7 +44,8 @@ export default function Home() {
                 const games = await fetchUserGames(token);
                 setGameHistory(games);
             } else {
-                setGameHistory(getGameHistory());
+                const localGames = getGameHistory();
+                setGameHistory(localGames.map(id => ({ id, last_activity: Date.now() / 1000 })));
             }
 
             const lastGameId = getLastGameId();
@@ -113,13 +114,13 @@ export default function Home() {
         if (user && token) {
             const success = await removeUserGame(token, gameId);
             if (success) {
-                setGameHistory(prev => prev.filter(id => id !== gameId));
+                setGameHistory(prev => prev.filter(g => g.id !== gameId));
             } else {
                 alert("Kunde inte ta bort spelet från servern.");
             }
         } else {
             removeGameFromHistory(gameId);
-            setGameHistory(prev => prev.filter(id => id !== gameId));
+            setGameHistory(prev => prev.filter(g => g.id !== gameId));
         }
     };
 
@@ -285,35 +286,47 @@ export default function Home() {
                             <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-300">Dina Aktiva Spel</h2>
                             <ul className="space-y-3">
                                 <AnimatePresence>
-                                    {gameHistory.map((gId) => (
-                                        <motion.li
-                                            key={gId}
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: 20 }}
-                                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 bg-black/30 p-4 rounded-xl border border-white/5 hover:border-brand-primary/30 transition-colors"
-                                        >
-                                            <span className="font-mono font-bold text-gray-200 tracking-wider text-center sm:text-left">{gId}</span>
-                                            <div className="flex gap-2 w-full sm:w-auto">
-                                                <motion.button
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    onClick={() => handleRejoinGame(gId)}
-                                                    className="flex-1 sm:flex-none text-sm bg-brand-primary/20 hover:bg-brand-primaryHover text-white px-4 py-2 rounded-lg transition-colors font-medium justify-center flex"
-                                                >
-                                                    Återuppta
-                                                </motion.button>
-                                                <motion.button
-                                                    whileHover={{ scale: 1.05, backgroundColor: "rgba(239, 68, 68, 0.2)" }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    onClick={() => handleRemoveGame(gId)}
-                                                    className="text-sm text-gray-400 hover:text-red-400 px-3 py-2 rounded-lg transition-colors"
-                                                >
-                                                    ✕
-                                                </motion.button>
-                                            </div>
-                                        </motion.li>
-                                    ))}
+                                    {gameHistory.map((game) => {
+                                        const daysInactive = (Date.now() / 1000 - game.last_activity) / (24 * 3600);
+                                        const isOld = daysInactive > 25;
+
+                                        return (
+                                            <motion.li
+                                                key={game.id}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: 20 }}
+                                                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 bg-black/30 p-4 rounded-xl border border-white/5 hover:border-brand-primary/30 transition-colors"
+                                            >
+                                                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                                    <span className="font-mono font-bold text-gray-200 tracking-wider text-center sm:text-left">{game.id}</span>
+                                                    {isOld && (
+                                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[10px] uppercase font-bold tracking-tight animate-pulse">
+                                                            <span className="text-sm">⚠️</span>
+                                                            Rensas snart p.g.a inaktivitet
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex gap-2 w-full sm:w-auto">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={() => handleRejoinGame(game.id)}
+                                                        className="flex-1 sm:flex-none px-4 py-2 bg-brand-primary/10 hover:bg-brand-primary text-brand-primary hover:text-white border border-brand-primary/30 rounded-lg text-sm font-bold transition-all"
+                                                    >
+                                                        Spela
+                                                    </motion.button>
+                                                    <button
+                                                        onClick={() => handleRemoveGame(game.id)}
+                                                        className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                                                        title="Ta bort från lista"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            </motion.li>
+                                        );
+                                    })}
                                 </AnimatePresence>
                             </ul>
                         </motion.div>

@@ -1,4 +1,5 @@
 import socketio
+import asyncio
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +23,30 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Background Cleanup Task ---
+async def cleanup_task():
+    """Background task that runs every hour to prune inactive resources."""
+    while True:
+        try:
+            await asyncio.sleep(3600) # Wait 1 hour
+            print("[CLEANUP] Starting scheduled resource pruning...")
+            
+            # Prune inactive games (30 days)
+            removed_games = game_lobby.cleanup_inactive_games(max_idle_days=30)
+            
+            # Prune session cache
+            AuthManager.cleanup_session_cache()
+            
+            if removed_games > 0:
+                print(f"[CLEANUP] Successfully removed {removed_games} inactive games.")
+        except Exception as e:
+            print(f"[CLEANUP] Error in background task: {e}")
+
+@app.on_event("startup")
+async def startup_event():
+    import asyncio
+    asyncio.create_task(cleanup_task())
 
 
 # --- Base Route for Health Checks ---

@@ -51,6 +51,10 @@ class GameManager:
         self.winner_id: Optional[str] = None
         self.guess_log: List[Dict[str, Any]] = []
         self.dynamic_ai_status: Optional[str] = None
+        self.last_activity = time.time()
+
+    def _update_activity(self):
+        self.last_activity = time.time()
 
     def mask_word(self) -> str:
         if not self.word: return ""
@@ -59,6 +63,7 @@ class GameManager:
         return "".join([c if c in self.guessed or c == ' ' else '_' for c in self.word])
 
     def add_player(self, uuid: str, name: str, sid: str):
+        self._update_activity()
         if uuid in self.players:
             # Update existing player info
             self.players[uuid]['online'] = True
@@ -116,6 +121,7 @@ class GameManager:
         self.guess_log = [] # List of {name, letter, correct}
 
     def process_guess(self, uuid: str, letter: str):
+        self._update_activity()
         if self.status != 'playing': return
         if self.chooser_id == uuid: return
 
@@ -179,6 +185,7 @@ class GameManager:
         Allows the chooser to pick the word for this round.
         Returns (success: bool, message: str)
         """
+        self._update_activity()
         from ..ai_validator import validate_word_with_ai
         
         if self.status != 'choosing':
@@ -290,6 +297,33 @@ class GameLobby:
         if game_id not in self.games:
             self.games[game_id] = GameManager(game_id)
         return self.games[game_id]
+
+    def cleanup_inactive_games(self, max_idle_days: int = 30) -> int:
+        """Removes games that have been inactive for more than max_idle_days."""
+        now = time.time()
+        max_idle_seconds = max_idle_days * 24 * 60 * 60
+        
+        to_remove = []
+        for game_id, game in self.games.items():
+            if now - game.last_activity > max_idle_seconds:
+                to_remove.append(game_id)
+                
+        for game_id in to_remove:
+            print(f"[CLEANUP] Removing inactive game: {game_id}")
+            del self.games[game_id]
+            
+        return len(to_remove)
+
+    def get_games_metadata(self, game_ids: List[str]) -> List[Dict[str, Any]]:
+        """Returns metadata (id, last_activity) for a list of game IDs."""
+        result = []
+        for g_id in game_ids:
+            if g_id in self.games:
+                result.append({
+                    "id": g_id,
+                    "last_activity": self.games[g_id].last_activity
+                })
+        return result
 
     def count_games_for_user(self, user_id: str) -> int:
         """Count how many active games in the lobby have the given user as a player."""
