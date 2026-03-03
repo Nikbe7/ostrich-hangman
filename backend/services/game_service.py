@@ -228,6 +228,8 @@ class GameManager:
                     print(f"Failed to save new AI word to file: {e}")
                     
         if not is_valid:
+            if is_valid == "RATE_LIMITED":
+                return False, "AI-validering är tillfälligt begränsad på grund av hög belastning. Prova ett enklare ord som finns i ordlistan."
             return False, f"Ordet '{word_upper}' finns inte i ordlistan eller godkändes inte av AI."
 
         self.word = word_upper
