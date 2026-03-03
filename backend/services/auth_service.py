@@ -3,15 +3,12 @@ import json
 import secrets
 import uuid
 import logging
-from passlib.context import CryptContext
+import bcrypt
 from ..core.supabase import supabase
 from typing import Dict, Any, Optional
 from datetime import datetime
 
 logger = logging.getLogger("auth_service")
-
-# Setup passlib CryptContext for bcrypt hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # In-memory cache to prevent Supabase rate-limits during rapid socket events
 _session_cache: Dict[str, Dict[str, Any]] = {}
@@ -24,16 +21,23 @@ class AuthManager:
 
     @staticmethod
     def _hash_password(password: str) -> str:
-        return pwd_context.hash(password)
+        # bcrypt requires bytes
+        pw_bytes = password.encode('utf-8')
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(pw_bytes, salt)
+        return hashed.decode('utf-8')
 
     @staticmethod
     def _verify_password(plain_password: str, hashed_password: str) -> bool:
         try:
-            return pwd_context.verify(plain_password, hashed_password)
-        except Exception:
-            # Fallback for legacy hashes or malformed hashes to prevent 500 error
+            # bcrypt requires bytes for both plain and hashed
+            return bcrypt.checkpw(
+                plain_password.encode('utf-8'),
+                hashed_password.encode('utf-8')
+            )
+        except Exception as e:
+            logger.error("Bcrypt verification failed: %s", e)
             return False
-
     @staticmethod
     def register(username: str, password: str) -> Dict[str, Any]:
         # Check if username exists (case insensitive)
