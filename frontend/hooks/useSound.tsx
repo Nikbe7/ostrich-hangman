@@ -22,42 +22,69 @@ export const useSound = () => {
 };
 
 export const SoundProvider = ({ children }: { children: ReactNode }): JSX.Element => {
-    const [isMuted, setIsMuted] = useState(false);
+    // Initialize state from localStorage if available, otherwise default to false (sound on)
+    const [isMuted, setIsMuted] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('ostrich_muted');
+            return saved === 'true';
+        }
+        return false;
+    });
+
     const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
 
+    // Save to localStorage whenever mute state changes
     useEffect(() => {
-        const initCtx = () => {
-            if (!audioCtx && typeof window !== 'undefined') {
-                const Ctx = window.AudioContext || (window as any).webkitAudioContext;
-                if (Ctx) setAudioCtx(new Ctx());
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('ostrich_muted', String(isMuted));
+        }
+    }, [isMuted]);
+
+    // Lazy initialization for AudioContext. Unlocks reliably upon first user interaction function call
+    const getAudioContext = useCallback(() => {
+        if (typeof window === 'undefined') return null;
+
+        let ctx = audioCtx;
+        if (!ctx) {
+            const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+            if (Ctx) {
+                ctx = new Ctx();
+                setAudioCtx(ctx);
             }
-        };
-        window.addEventListener('click', initCtx, { once: true });
-        return () => window.removeEventListener('click', initCtx);
+        }
+
+        // Browsers put AudioContext in 'suspended' state until a user interacts
+        if (ctx && ctx.state === 'suspended') {
+            ctx.resume().catch(err => console.warn("Could not resume AudioContext:", err));
+        }
+        return ctx;
     }, [audioCtx]);
 
     const playTone = useCallback((freq: number, type: OscillatorType, duration: number, volume: number = 0.1) => {
-        if (isMuted || !audioCtx) return;
+        if (isMuted) return;
 
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
+        const ctx = getAudioContext();
+        if (!ctx) return;
+
+        try {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+            gain.gain.setValueAtTime(volume, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start();
+            osc.stop(ctx.currentTime + duration);
+        } catch (e) {
+            console.error("Audio playback failed:", e);
         }
-
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-        gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-    }, [isMuted, audioCtx]);
+    }, [isMuted, getAudioContext]);
 
     const playCorrect = useCallback(() => {
         playTone(660, 'sine', 0.1, 0.1);
@@ -79,7 +106,13 @@ export const SoundProvider = ({ children }: { children: ReactNode }): JSX.Elemen
         setTimeout(() => playTone(146, 'sawtooth', 0.6, 0.1), 200);
     }, [playTone]);
 
-    const toggleMute = () => setIsMuted(prev => !prev);
+    const toggleMute = () => {
+        // If unmuting, try to prime the audio context immediately
+        if (isMuted) {
+            getAudioContext();
+        }
+        setIsMuted(prev => !prev);
+    };
 
     return (
         <SoundContext.Provider value={{ isMuted, toggleMute, playCorrect, playWrong, playWin, playLoss }}>

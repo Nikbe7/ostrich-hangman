@@ -164,7 +164,6 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
                         <button
                             onClick={() => {
                                 navigator.clipboard.writeText(gameId);
-                                setNotification('Spel-ID kopierat!');
                                 showToast('Spel-ID kopierat!', 'info');
                             }}
                             className="text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 shrink-0"
@@ -233,7 +232,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
                                                 <button
                                                     onClick={() => {
                                                         navigator.clipboard.writeText(gameId);
-                                                        setNotification('Spel-ID kopierat!');
+                                                        showToast('Spel-ID kopierat!', 'info');
                                                     }}
                                                     className="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-white/10 opacity-75 group-hover:opacity-100"
                                                     title="Kopiera Spel-ID"
