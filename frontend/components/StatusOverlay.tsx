@@ -87,11 +87,11 @@ export default function StatusOverlay({
             {/* Status Bar */}
             <div className="game-status-bar text-center relative z-30">
                 {game.status === 'waiting' && (
-                    <div className="status-slide-in inline-flex flex-col items-center gap-1 bg-indigo-500/10 backdrop-blur-xl rounded-xl px-3 py-1.5 border border-indigo-400/25 shadow-lg shadow-indigo-500/10">
-                        <h2 className="text-xs font-medium text-indigo-200">⏳ Väntar på att spelet ska börja...</h2>
+                    <div className="status-slide-in inline-flex flex-col items-center gap-2 bg-indigo-500/10 backdrop-blur-xl rounded-xl px-4 py-3 border border-indigo-400/25 shadow-lg shadow-indigo-500/10">
+                        <h2 className="text-sm md:text-base font-bold text-indigo-200 tracking-wide text-center">⏳ Väntar på att spelet ska börja...</h2>
                         <button
                             onClick={onNewGame}
-                            className="status-bounce bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-2.5 px-8 rounded-xl transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30"
+                            className="status-bounce bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-2.5 px-8 rounded-xl transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30 w-full md:w-auto mt-1"
                         >
                             Starta Spelet
                         </button>
