@@ -18,19 +18,24 @@ WORDS_FILE = os.path.join(DATA_DIR, 'words.txt')
 _valid_words_list: List[str] = []
 _valid_words_set: Set[str] = set()
 
+# Initialize from Supabase
+from ..core.supabase import supabase
+
 def _load_words():
     global _valid_words_list, _valid_words_set
-    if not os.path.exists(WORDS_FILE):
-        _valid_words_list = ["OSTRICH", "HANGMAN", "SWEDEN"]
-        _valid_words_set = set(_valid_words_list)
-        return
     try:
-        with open(WORDS_FILE, 'r', encoding='utf-8') as f:
-            _valid_words_list = [line.strip().upper() for line in f if line.strip()]
+        response = supabase.table('app_words').select('word').execute()
+        if response.data:
+            _valid_words_list = [row['word'].upper() for row in response.data]
             _valid_words_set = set(_valid_words_list)
-        logger.info("Loaded %d words into memory.", len(_valid_words_list))
+        else:
+            # Fallback if db is empty
+            _valid_words_list = ["OSTRICH", "HANGMAN", "SWEDEN"]
+            _valid_words_set = set(_valid_words_list)
+            
+        logger.info("Loaded %d words from database.", len(_valid_words_list))
     except Exception as e:
-        logger.error("Error loading words: %s", e)
+        logger.error("Error loading words from database: %s", e)
         _valid_words_list = ["OSTRICH", "HANGMAN", "PYTHON", "FASTAPI"]
         _valid_words_set = {"ERROR"}
 
@@ -58,6 +63,56 @@ class GameManager:
 
     def _update_activity(self):
         self.last_activity = time.time()
+        self.save_to_db()
+
+    def save_to_db(self):
+        """Saves current state to Supabase"""
+        state = self.get_state_for_frontend()
+        # Ensure we save the REAL word to DB for recovery, because frontend might just get '____'
+        state['real_word'] = self.word
+        try:
+            # We don't want to block the socket loop, so we'll do this "best effort" using asyncio background task
+            # Or normally save it directly via synchronous SDK. For simplicity, we'll use synchronous supabase SDK.
+            data = {"id": self.game_id, "state": state, "last_activity": datetime.utcnow().isoformat()}
+            supabase.table('app_games').upsert(data).execute()
+        except Exception as e:
+            logger.error("Failed to save game %s to db: %s", self.game_id, e)
+
+    @classmethod
+    def load_from_db(cls, game_id: str) -> Optional['GameManager']:
+        try:
+            res = supabase.table('app_games').select('state').eq('id', game_id).execute()
+            if res.data and len(res.data) > 0:
+                gm = cls(game_id)
+                state = res.data[0]['state']
+                
+                # Restore state mapping
+                gm.word = state.get('real_word', state.get('word', '')) # 'real_word' is our custom db key
+                gm.guessed = state.get('guessedLetters', [])
+                gm.wrong_guesses = state.get('wrongGuesses', 0)
+                gm.status = state.get('status', 'waiting')
+                gm.chooser_id = state.get('wordChooser')
+                gm.winner_id = state.get('winnerId')
+                gm.message = state.get('message', '')
+                gm.guess_log = state.get('guessLog', [])
+                gm.history = state.get('history', [])
+                
+                # Restore players
+                players_list = state.get('players', [])
+                for p in players_list:
+                    gm.players[p['sessionId']] = {
+                        'id': p['sessionId'],
+                        'sid': '', # offline initially
+                        'name': p['name'],
+                        'score': p['score'],
+                        'online': False,
+                        'last_seen': time.time() if p.get('isOnline') else 0, # approximation
+                        'is_chooser': (p['sessionId'] == gm.chooser_id)
+                    }
+                return gm
+        except Exception as e:
+            logger.error("Failed to load game %s from db: %s", game_id, e)
+        return None
 
     def mask_word(self) -> str:
         if not self.word: return ""
@@ -230,13 +285,11 @@ class GameManager:
                 _valid_words_set.add(word_upper)
                 _valid_words_list.append(word_upper) # Also add to list for random choice
                 
-                # Append to permanent file
-                # Use the global WORDS_FILE constant
+                # Append to persistent DB
                 try:
-                    with open(WORDS_FILE, 'a', encoding='utf-8') as f:
-                        f.write(word_upper + "\n")
+                    supabase.table('app_words').insert({'word': word_upper}).execute()
                 except Exception as e:
-                    logger.error("Failed to save new AI word to file: %s", e)
+                    logger.error("Failed to save new AI word to DB: %s", e)
                     
         if not is_valid:
             if is_valid == "RATE_LIMITED":
@@ -303,7 +356,11 @@ class GameLobby:
 
     def get_game(self, game_id: str) -> GameManager:
         if game_id not in self.games:
-            self.games[game_id] = GameManager(game_id)
+            # Try to load from DB first
+            game = GameManager.load_from_db(game_id)                
+            if not game:
+                game = GameManager(game_id)
+            self.games[game_id] = game
         return self.games[game_id]
 
     def cleanup_inactive_games(self, max_idle_days: int = 30) -> int:
@@ -312,14 +369,22 @@ class GameLobby:
         max_idle_seconds = max_idle_days * 24 * 60 * 60
         
         to_remove = []
-        for game_id, game in self.games.items():
+        for game_id, game in list(self.games.items()):
             if now - game.last_activity > max_idle_seconds:
                 to_remove.append(game_id)
                 
         for game_id in to_remove:
-            logger.info("Removing inactive game: %s", game_id)
-            del self.games[game_id]
-            
+            logger.info("Removing inactive game from memory: %s", game_id)
+            if game_id in self.games:
+                del self.games[game_id]
+            # Since DB is persistent, we can leave it in the DB indefinitely,
+            # or add logic to delete very old games from Supabase.
+            try:
+                # Option: Delete from DB after 30 days to save space
+                supabase.table('app_games').delete().lt('last_activity', datetime.fromtimestamp(now - max_idle_seconds).isoformat()).execute()
+            except Exception as e:
+                logger.error("Failed to prune old games from DB: %s", e)
+                
         return len(to_remove)
 
     def get_games_metadata(self, game_ids: List[str]) -> List[Dict[str, Any]]:

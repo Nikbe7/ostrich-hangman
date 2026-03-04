@@ -69,9 +69,30 @@ def reset_all_data() -> bool:
             supabase.table("app_users").delete().eq("id", user["id"]).execute()
             
         print(f"Successfully deleted all data ({len(users)} users).")
+        
+        # Also clean up games and words 
+        # (Though foreign keys might not exist for games/words, good to clear them if "Reset ALL" is called)
+        try:
+            # To delete all rows, one approach is to delete where id is not null
+            supabase.table("app_games").delete().neq("id", "placeholder_to_force_delete_all").execute()
+            supabase.table("app_words").delete().neq("word", "placeholder_to_force_delete_all").execute()
+            print("Successfully cleared all games and words from DB.")
+        except Exception as e:
+            print(f"Error clearing games/words from DB: {e}")
+            
         return True
     except Exception as e:
         print(f"Error resetting database: {e}")
+        return False
+
+def clear_all_games_db() -> bool:
+    """Clear all active games from the DB."""
+    try:
+        supabase.table("app_games").delete().neq("id", "placeholder").execute()
+        print("Successfully cleared all active game sessions from DB.")
+        return True
+    except Exception as e:
+        print(f"Error clearing games from DB: {e}")
         return False
 
 def print_menu():
@@ -79,8 +100,9 @@ def print_menu():
     print("1. List all users")
     print("2. Delete a user")
     print("3. Reset a user's games")
-    print("4. Reset ALL database data")
-    print("5. Exit")
+    print("4. Clear all active games (app_games)")
+    print("5. Reset ALL database data (Users, Sessions, Games, Words)")
+    print("6. Exit")
     print("----------------------------------\n")
 
 def main():
@@ -115,19 +137,26 @@ def main():
                 print("Operation cancelled.")
                 
         elif choice == '4':
-            print("WARNING: This will delete ALL users and sessions!")
+            confirm = input("Are you sure you want to clear all active game states from the database? (y/n): ").strip().lower()
+            if confirm == 'y':
+                clear_all_games_db()
+            else:
+                print("Operation cancelled.")
+
+        elif choice == '5':
+            print("WARNING: This will delete ALL users, sessions, games, and words!")
             confirm = input("Type 'DELETE ALL' to confirm: ").strip()
             if confirm == 'DELETE ALL':
                 reset_all_data()
             else:
                 print("Operation cancelled or confirmation failed.")
                 
-        elif choice == '5':
+        elif choice == '6':
             print("Exiting...")
             break
             
         else:
-            print("Invalid option. Please choose 1-5.")
+            print("Invalid option. Please choose 1-6.")
 
 if __name__ == "__main__":
     main()
