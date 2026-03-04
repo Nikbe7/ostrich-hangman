@@ -101,7 +101,7 @@ export default function DashboardContent({
                         <AnimatePresence>
                             {gameHistory.map((game) => {
                                 const daysInactive = (Date.now() / 1000 - game.last_activity) / (24 * 3600);
-                                const isOld = daysInactive > 25;
+                                const isArchived = daysInactive >= 1;
 
                                 return (
                                     <motion.li
@@ -113,10 +113,10 @@ export default function DashboardContent({
                                     >
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                             <span className="font-mono font-bold text-gray-200 tracking-wider text-center sm:text-left">{game.id}</span>
-                                            {isOld && (
-                                                <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[10px] uppercase font-bold tracking-tight animate-pulse">
-                                                    <span className="text-sm">⚠️</span>
-                                                    Rensas snart p.g.a inaktivitet
+                                            {isArchived && (
+                                                <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] uppercase font-bold tracking-tight">
+                                                    <span className="text-sm">☁️</span>
+                                                    Sparad i molnet
                                                 </div>
                                             )}
                                         </div>
