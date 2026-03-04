@@ -55,8 +55,8 @@ async def cleanup_task():
         await asyncio.sleep(3600)  # Run every hour
         logger.info("Starting scheduled resource pruning...")
         try:
-            # Prune inactive games (30 days)
-            removed_games = game_lobby.cleanup_inactive_games(max_idle_days=30)
+            # Prune inactive games (1 day / 24 hours) from memory
+            removed_games = game_lobby.cleanup_inactive_games(max_idle_days=1)
             
             # Prune session cache
             AuthManager.cleanup_session_cache()
