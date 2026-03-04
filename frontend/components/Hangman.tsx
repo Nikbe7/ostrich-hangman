@@ -130,7 +130,7 @@ const Hangman: React.FC<HangmanProps> = ({ wrongGuesses, status = 'playing', isW
                 </defs>
 
                 {/* GHOST LAYER */}
-                <motion.g animate={{ opacity: (isFinished && isWin) ? 0 : 0.05 }} stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
+                <motion.g initial={{ opacity: 0.05 }} animate={{ opacity: (isFinished && isWin) ? 0 : 0.05 }} stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="20" y1="280" x2="140" y2="280" />
                     <line x1="80" y1="280" x2="80" y2="20" />
                     <line x1="80" y1="20" x2="200" y2="20" />
