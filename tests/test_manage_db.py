@@ -129,16 +129,16 @@ def test_reset_all_data_empty(mock_supabase):
         assert result is True
         mock_supabase.table().delete.assert_not_called()
 
-# Test the main CLI interactive flow (Menu choice 5 to exit initially)
+# Test the main CLI interactive flow (Menu choice 6 to exit initially)
 def test_main_exit():
-    with patch('builtins.input', return_value='5'):
+    with patch('builtins.input', return_value='6'):
         with patch('builtins.print') as mock_print:
             main()
             mock_print.assert_any_call("Exiting...")
 
 def test_main_list_users():
     # Simulate user choosing 1, then forcing exit by exception or patching another choice
-    with patch('builtins.input', side_effect=['1', '5']):
+    with patch('builtins.input', side_effect=['1', '6']):
         with patch('manage_db.get_all_users') as mock_get_users:
             mock_get_users.return_value = [{"id": "1", "username": "u1", "games": []}]
             with patch('builtins.print') as mock_print:
