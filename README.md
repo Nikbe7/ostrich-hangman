@@ -6,11 +6,12 @@ A modern real-time multiplayer implementation of the classic Hangman game, built
 
 - **Real-Time Multiplayer**: Play together instantly using WebSockets via `socket.io-client`.
 - **Dynamic AI Validation**: Words are validated through a Google Gemini Flash API pipeline to ensure they are real (and family-friendly) words before being committed to the database.
-- **Smart Game Persistence**: Sessions and user accounts are managed via Supabase enabling you to rejoin disconnected games.
-- **Inactivity Warnings**: Visual indicators (⚠️) appear in the lobby for games nearing the 30-day auto-pruning limit.
-- **Auto-Cleanup**: Background tasks automatically prune inactive games and session caches to maintain server performance.
-- **Modern Responsive UI**: Fully responsive fixed layout built with Tailwind CSS, Framer Motion for beautiful animations, and a customized aesthetic (`#059669` brand primary).
-- **Accounts & History**: Create an account to track your active games and history across devices.
+- **Smart Game Persistence**: Sessions and user accounts are managed via Supabase. Games are persisted to the database, allowing for cross-device history and recovery.
+- **Cloud-Sync Indicators**: Visual indicators (☁️) appear in the dashboard for games that have been archived to the database after 24 hours of inactivity.
+- **Auto-Cleanup**: Background tasks automatically prune inactive games from server RAM after 24 hours to maintain peak performance, while keeping the state safe in Supabase.
+- **Modern Responsive UI**: Fully responsive fixed layout built with Tailwind CSS, Framer Motion for beautiful animations, and a customized aesthetic.
+- **Mobile Haptics**: Physical vibration feedback on mobile devices for correct/wrong guesses and game outcomes.
+- **Accounts & History**: Create an account to track your active games and history across devices securely.
 - **Dynamic Feedback**: Centralized toast notification system for errors, warnings, and success messages.
 - **Sound Effects**: Procedurally generated audio feedback for guesses, wins, and losses (with mute toggle).
 - **Type Safety**: Shared TypeScript definitions synchronize frontend and backend data structures.
