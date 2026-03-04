@@ -14,6 +14,15 @@ export function useGameSocket(gameId: string, sessionId: string, name: string) {
     const { playCorrect, playWrong, playWin, playLoss } = useSound();
 
     useEffect(() => {
+        if (notification) {
+            const timer = setTimeout(() => {
+                setNotification('');
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [notification]);
+
+    useEffect(() => {
         if (!socket) return;
 
         const handleUpdate = (updatedGame: Game) => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, use } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSessionId, getPlayerName, setPlayerName, setLastGameId, clearLastGameId, addGameToHistory } from '@/utils/session';
@@ -27,12 +27,22 @@ const FUN_FACTS = [
     "En struts spark kan vara tillräckligt kraftig för att döda ett lejon."
 ];
 
-export default function GamePage() {
-    const params = useParams();
-    const router = useRouter();
-    const gameId = typeof params.id === 'string' ? params.id.toUpperCase() : '';
+import { useToast } from '@/components/Toast';
 
+export default function GamePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
+    const router = useRouter();
+    const gameId = id.toUpperCase();
+    const { showToast } = useToast();
+    // Assuming `user` is provided by a `useAuth` hook or similar context,
+    // which is not fully included in the provided snippet but implied by `user?.id`.
+    // For now, `sessionId` will be initialized based on `getSessionId()` as before,
+    // and the `user?.id` part is commented out to avoid an undefined `user` error.
+    // If `useAuth` is intended, it should be imported and initialized.
+    // const sessionId = user?.id || '';
     const [sessionId, setSessionId] = useState('');
+
+
     const [name, setName] = useState('');
     const [wordInput, setWordInput] = useState('');
     const [showMobileSidebar, setShowMobileSidebar] = useState(false);
@@ -155,6 +165,7 @@ export default function GamePage() {
                             onClick={() => {
                                 navigator.clipboard.writeText(gameId);
                                 setNotification('Spel-ID kopierat!');
+                                showToast('Spel-ID kopierat!', 'info');
                             }}
                             className="text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 shrink-0"
                             title="Kopiera Spel-ID"

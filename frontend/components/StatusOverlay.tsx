@@ -44,16 +44,30 @@ export default function StatusOverlay({
             )}
 
             {/* Notifications & Errors */}
-            {error && (
-                <div className="bg-red-500/90 text-white p-3 rounded fixed top-4 right-4 animate-bounce z-50 shadow-lg">
-                    {error}
-                </div>
-            )}
-            {notification && (
-                <div className="bg-blue-500/90 text-white p-3 rounded fixed top-4 right-4 z-50 shadow-lg">
-                    {notification}
-                </div>
-            )}
+            <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 items-end pointer-events-none">
+                <AnimatePresence>
+                    {error && (
+                        <motion.div
+                            initial={{ opacity: 0, x: 20, scale: 0.9 }}
+                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                            exit={{ opacity: 0, x: 20, scale: 0.9 }}
+                            className="bg-red-500/90 text-white p-3 rounded shadow-lg pointer-events-auto"
+                        >
+                            {error}
+                        </motion.div>
+                    )}
+                    {notification && (
+                        <motion.div
+                            initial={{ opacity: 0, x: 20, scale: 0.9 }}
+                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                            exit={{ opacity: 0, x: 20, scale: 0.9 }}
+                            className="bg-blue-500/90 text-white p-3 rounded shadow-lg pointer-events-auto"
+                        >
+                            {notification}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
 
             {/* AI Validation Overlay */}
             {game.dynamic_ai_status && (
