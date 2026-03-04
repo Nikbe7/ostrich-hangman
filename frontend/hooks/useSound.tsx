@@ -22,23 +22,26 @@ export const useSound = () => {
 };
 
 export const SoundProvider = ({ children }: { children: ReactNode }): JSX.Element => {
-    // Initialize state from localStorage if available, otherwise default to false (sound on)
-    const [isMuted, setIsMuted] = useState(() => {
+    const [isMuted, setIsMuted] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    // Load state from localStorage strictly after mount to prevent Next.js hydration mismatch
+    useEffect(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('ostrich_muted');
-            return saved === 'true';
+            if (saved === 'true') setIsMuted(true);
+            setIsLoaded(true);
         }
-        return false;
-    });
+    }, []);
 
     const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
 
-    // Save to localStorage whenever mute state changes
+    // Save to localStorage whenever mute state changes, but only after initial load
     useEffect(() => {
-        if (typeof window !== 'undefined') {
+        if (isLoaded && typeof window !== 'undefined') {
             localStorage.setItem('ostrich_muted', String(isMuted));
         }
-    }, [isMuted]);
+    }, [isMuted, isLoaded]);
 
     // Lazy initialization for AudioContext. Unlocks reliably upon first user interaction function call
     const getAudioContext = useCallback(() => {
