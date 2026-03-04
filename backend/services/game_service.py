@@ -405,22 +405,55 @@ class GameLobby:
 
     def get_games_metadata(self, game_ids: List[str]) -> List[Dict[str, Any]]:
         """Returns metadata (id, last_activity) for a list of game IDs."""
-        result = []
-        now = time.time()
+        if not game_ids:
+            return []
+            
+        result_map = {}
+        missing_ids = []
+        
+        # 1. Get from memory
         for g_id in game_ids:
             if g_id in self.games:
-                result.append({
+                result_map[g_id] = {
                     "id": g_id,
                     "last_activity": self.games[g_id].last_activity
-                })
+                }
             else:
-                # Still return the ID so it shows up in history, 
-                # even if it's not currently 'active' in memory.
-                result.append({
+                missing_ids.append(g_id)
+                
+        # 2. Get from DB for missing ones
+        if missing_ids:
+            try:
+                db_res = supabase.table('app_games').select('id', 'last_activity').in_('id', missing_ids).execute()
+                for item in db_res.data:
+                    # Convert ISO string to timestamp if needed
+                    last_act = item['last_activity']
+                    if isinstance(last_act, str):
+                        try:
+                            last_act = datetime.fromisoformat(last_act.replace('Z', '+00:00')).timestamp()
+                        except:
+                            last_act = time.time()
+                    
+                    result_map[item['id']] = {
+                        "id": item['id'],
+                        "last_activity": last_act
+                    }
+            except Exception as e:
+                logger.error("Failed to fetch games metadata from DB: %s", e)
+                
+        # 3. Handle remaining unknown IDs (fallback)
+        now = time.time()
+        final_result = []
+        for g_id in game_ids:
+            if g_id in result_map:
+                final_result.append(result_map[g_id])
+            else:
+                final_result.append({
                     "id": g_id,
-                    "last_activity": now # Fallback to now if unknown
+                    "last_activity": now
                 })
-        return result
+                
+        return final_result
 
     def count_games_for_user(self, user_id: str) -> int:
         """Count how many active games in the lobby have the given user as a player."""

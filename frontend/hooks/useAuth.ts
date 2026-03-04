@@ -18,7 +18,18 @@ export function useAuth() {
             if (token && storedUser) {
                 setUser(storedUser);
                 const serverGames = await fetchUserGames(token);
-                setGameHistory(serverGames);
+                const localGameIds = getGameHistory();
+
+                // One-time migration/merge: if local games exist that aren't on server, 
+                // we include them in the state. Joining them will persist them to DB.
+                const merged = [...serverGames];
+                localGameIds.forEach(id => {
+                    if (!merged.find(g => g.id === id)) {
+                        merged.push({ id, last_activity: Date.now() / 1000 });
+                    }
+                });
+
+                setGameHistory(merged);
             } else {
                 setGameHistory([]);
             }

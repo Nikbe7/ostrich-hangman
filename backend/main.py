@@ -90,7 +90,7 @@ async def connect(sid, environ, auth=None):
         if user:
             logger.info("Authenticated user: %s (%s)", user['username'], user['id'])
             # Store user info in session
-            sio.save_session(sid, {'user': user})
+            await sio.save_session(sid, {'user': user})
             return True # Indicate successful authentication
     
     logger.info("Anonymous connection: sid=%s", sid)
