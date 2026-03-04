@@ -106,6 +106,11 @@ export const removeUser = () => {
 export const logout = () => {
     removeToken();
     removeUser();
-    // Optional: reload page to clear states
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem('ostrich_game_history');
+        localStorage.removeItem('ostrich_last_game_id');
+        localStorage.removeItem('ostrich_player_name');
+        localStorage.removeItem('ostrich_session_id'); // Completely reset
+    }
     window.location.reload();
 }

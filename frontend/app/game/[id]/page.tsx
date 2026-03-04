@@ -81,7 +81,6 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
         if (gameId) {
             setLastGameId(gameId);
-            addGameToHistory(gameId);
         }
     }, [router, gameId]);
 
