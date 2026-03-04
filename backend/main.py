@@ -1,6 +1,7 @@
 import socketio
 import asyncio
 import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,7 +20,15 @@ logger = logging.getLogger("main")
 
 # Create Socket.IO server (Async)
 sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
-app = FastAPI(title="Ostrich Hangman API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    task = asyncio.create_task(cleanup_task())
+    yield
+    # Shutdown
+    task.cancel()
+
+app = FastAPI(title="Ostrich Hangman API", lifespan=lifespan)
 
 # Mount Socket.IO app
 socket_app = socketio.ASGIApp(sio, app)
@@ -57,10 +66,7 @@ async def cleanup_task():
         except Exception as e:
             logger.error("Error in background task: %s", e)
 
-@app.on_event("startup")
-async def startup_event():
-    import asyncio
-    asyncio.create_task(cleanup_task())
+# Removed old on_event startup handler
 
 
 # --- Base Route for Health Checks ---
