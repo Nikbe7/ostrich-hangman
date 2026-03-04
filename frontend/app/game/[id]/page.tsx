@@ -288,19 +288,17 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
                                 </div>
                             )}
 
-                            {/* Row 3: Mobile Guessed Letters */}
-                            {game && game.guessedLetters && game.guessedLetters.length > 0 && (
-                                <div className="md:hidden flex flex-wrap justify-center gap-1 px-2">
-                                    {(game.guessLog || game.guessedLetters.map((l: string) => ({ letter: l, correct: game.word?.toUpperCase().includes(l.toUpperCase()), name: '' }))).map((item: any, i: number) => (
-                                        <span
-                                            key={i}
-                                            className={`w-6 h-6 flex items-center justify-center rounded-full font-bold text-[10px] ${item.correct ? 'bg-brand-primary text-white border border-brand-primaryHover' : 'bg-brand-danger/80 text-white border border-brand-danger'}`}
-                                        >
-                                            {item.letter}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
+                            {/* Row 3: Mobile Guessed Letters – always rendered to prevent layout shift */}
+                            <div className="md:hidden flex flex-wrap justify-center gap-1 px-2 min-h-[1.75rem]">
+                                {game && game.guessedLetters && (game.guessLog || game.guessedLetters.map((l: string) => ({ letter: l, correct: game.word?.toUpperCase().includes(l.toUpperCase()), name: '' }))).map((item: any, i: number) => (
+                                    <span
+                                        key={i}
+                                        className={`w-6 h-6 flex items-center justify-center rounded-full font-bold text-[10px] ${item.correct ? 'bg-brand-primary text-white border border-brand-primaryHover' : 'bg-brand-danger/80 text-white border border-brand-danger'}`}
+                                    >
+                                        {item.letter}
+                                    </span>
+                                ))}
+                            </div>
 
                             {/* Row 4: Keyboard */}
                             <div className={`flex items-start justify-center ${hideKeyboard ? 'invisible' : ''}`}>

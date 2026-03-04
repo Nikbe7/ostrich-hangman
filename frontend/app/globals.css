@@ -48,6 +48,13 @@ body {
   padding: clamp(0.5rem, 1.5vh, 1rem) clamp(1rem, 3vw, 2rem);
 }
 
+/* On mobile, push status bar below the mobile top bar */
+@media (max-width: 767px) {
+  .game-status-bar {
+    top: 56px;
+  }
+}
+
 .game-status-bar>* {
   pointer-events: auto;
 }
@@ -203,8 +210,18 @@ body {
     display: none;
   }
 
+  /* Status bar sits at top:40px (below mobile top bar) + ~30px pill = ~4.5rem */
+  .game-content-grid {
+    padding-top: 4.5rem;
+  }
+
   .hangman-container {
-    padding-top: 0.5rem;
+    padding-top: 0;
+    max-height: 30vh;
+  }
+
+  .hangman-container svg {
+    max-height: 30vh;
   }
 
   .keyboard-grid {
@@ -220,16 +237,18 @@ body {
   }
 
   .game-status-bar {
-    font-size: 0.85rem;
-    padding: 0.5rem 0.75rem;
+    font-size: 0.6rem;
+    padding: 0.15rem 0.35rem;
+    transform: scale(0.75);
+    transform-origin: top center;
   }
 
-  /* Ensure touch-friendly buttons inside status bar on mobile */
+  /* Touch-friendly buttons inside status bar on mobile */
   .game-status-bar button {
-    min-height: 44px;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-    font-size: 0.9rem;
+    min-height: 40px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: 0.82rem;
   }
 }
 

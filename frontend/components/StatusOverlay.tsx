@@ -87,8 +87,8 @@ export default function StatusOverlay({
             {/* Status Bar */}
             <div className="game-status-bar text-center relative z-30">
                 {game.status === 'waiting' && (
-                    <div className="status-slide-in inline-flex flex-col items-center gap-3 bg-indigo-500/10 backdrop-blur-xl rounded-2xl px-8 py-4 border border-indigo-400/25 shadow-lg shadow-indigo-500/10">
-                        <h2 className="text-sm font-medium text-indigo-200">⏳ Väntar på att spelet ska börja...</h2>
+                    <div className="status-slide-in inline-flex flex-col items-center gap-1 bg-indigo-500/10 backdrop-blur-xl rounded-xl px-3 py-1.5 border border-indigo-400/25 shadow-lg shadow-indigo-500/10">
+                        <h2 className="text-xs font-medium text-indigo-200">⏳ Väntar på att spelet ska börja...</h2>
                         <button
                             onClick={onNewGame}
                             className="status-bounce bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-2.5 px-8 rounded-xl transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30"
@@ -100,21 +100,21 @@ export default function StatusOverlay({
                 {game.status === 'choosing' && (
                     <div className="status-slide-in">
                         {isMyTurnToChoose ? (
-                            <div className="status-glow-pulse inline-flex items-center gap-2.5 bg-amber-500/15 backdrop-blur-xl px-6 py-3 rounded-2xl border border-amber-400/40 text-amber-300">
+                            <div className="status-glow-pulse inline-flex items-center gap-1.5 bg-amber-500/15 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-amber-400/40 text-amber-300">
                                 <span className="text-lg">👑</span>
-                                <span className="font-bold text-sm md:text-base">Din tur att välja ord!</span>
+                                <span className="font-bold text-xs">Din tur att välja ord!</span>
                             </div>
                         ) : (
-                            <div className="inline-flex items-center gap-2.5 bg-purple-500/10 backdrop-blur-xl px-6 py-3 rounded-2xl border border-purple-400/25 text-purple-200 shadow-lg shadow-purple-500/5">
+                            <div className="status-slide-in inline-flex items-center gap-1.5 bg-purple-500/10 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-purple-400/25 text-purple-200 shadow-lg shadow-purple-500/5">
                                 <span>⏳</span>
-                                <span className="text-sm md:text-base">Väntar på <span className="text-purple-100 font-bold">{chooserName}</span>...</span>
+                                <span className="text-xs">Väntar på <span className="text-purple-100 font-bold">{chooserName}</span>...</span>
                             </div>
                         )}
                     </div>
                 )}
                 {game.status === 'playing' && (
-                    <div className="status-slide-in inline-flex items-center gap-2.5 bg-emerald-500/10 backdrop-blur-xl px-6 py-3 rounded-2xl border border-emerald-400/25 shadow-lg shadow-emerald-500/5">
-                        <span className="text-sm md:text-base">
+                    <div className="status-slide-in inline-flex items-center gap-1.5 bg-emerald-500/10 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-emerald-400/25 shadow-lg shadow-emerald-500/5">
+                        <span className="text-xs">
                             {isChooser
                                 ? <span className="text-emerald-200">De andra spelarna gissar ordet!</span>
                                 : <>Gissa ordet som <span className="font-bold text-amber-300">{chooserName}</span> valde!</>
