@@ -34,17 +34,21 @@ export function useGameSocket(gameId: string, sessionId: string, name: string) {
                 if (latestHistory?.winner) {
                     setShowConfetti(true);
                     playWin();
+                    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
                     setTimeout(() => setShowConfetti(false), 4000);
                 } else {
                     playLoss();
+                    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([300]);
                 }
             } else if (game.status === 'playing' && prev.status === 'playing') {
                 if (game.guessedLetters.length > prev.guessedLetters.length) {
                     const lastGuess = game.guessedLetters[game.guessedLetters.length - 1];
                     if (game.word.includes(lastGuess)) {
                         playCorrect();
+                        if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50); // Short buzz for correct
                     } else {
                         playWrong();
+                        if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([50, 100, 50]); // Two short buzzes for wrong
                     }
                 }
             }

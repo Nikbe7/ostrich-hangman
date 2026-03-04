@@ -58,7 +58,7 @@ const Keyboard: React.FC<KeyboardProps> = ({ guessedLetters, onGuess, disabled, 
                         animate={{
                             opacity: 1,
                             scale: isActive ? 0.85 : 1,
-                            x: isIncorrect ? [0, -4, 4, -4, 4, 0] : 0 // Shake on incorrect
+                            x: isIncorrect ? [0, -8, 8, -8, 8, -4, 4, 0] : 0 // Enhanced Shake on incorrect
                         }}
                         transition={{
                             duration: isIncorrect ? 0.3 : 0.15,
