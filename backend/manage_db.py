@@ -108,7 +108,7 @@ def print_menu():
 def main():
     while True:
         print_menu()
-        choice = input("Select an option (1-5): ").strip()
+        choice = input("Select an option (1-6): ").strip()
         
         if choice == '1':
             users = get_all_users()
