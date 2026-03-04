@@ -70,15 +70,9 @@ export default function PlayerList({ players, currentPlayerId, wordChooser }: Pl
                                     </div>
                                     <div className="flex items-center justify-end gap-1">
                                         <span className="text-[10px] text-gray-400">Poäng:</span>
-                                        <motion.span
-                                            key={`score-${player.score}`}
-                                            initial={{ scale: 1.5 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                                            className="font-bold text-xs text-brand-primary"
-                                        >
+                                        <span className="font-bold text-xs text-brand-primary transition-all duration-300 transform">
                                             {player.score || 0}
-                                        </motion.span>
+                                        </span>
                                     </div>
                                 </div>
                             </motion.li>
