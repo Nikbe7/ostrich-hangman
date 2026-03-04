@@ -28,8 +28,8 @@ export default function PlayerList({ players, currentPlayerId, wordChooser }: Pl
                 <span className="bg-black/40 text-xs px-2 py-0.5 rounded-full text-brand-primary">{players.length}</span>
             </h2>
             <ul className="space-y-1.5 overflow-y-auto pr-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/20">
-                <AnimatePresence>
-                    {sortedPlayers.map((player, index) => {
+                <AnimatePresence mode="popLayout">
+                    {sortedPlayers.map((player) => {
                         const isCurrent = player.sessionId === currentPlayerId;
                         const isChooser = player.sessionId === wordChooser;
 
@@ -72,10 +72,10 @@ export default function PlayerList({ players, currentPlayerId, wordChooser }: Pl
                                         <span className="text-[10px] text-gray-400">Poäng:</span>
                                         <motion.span
                                             key={`score-${player.score}`}
-                                            initial={{ scale: 1.5, color: '#10b981' }} // Emerald green pulse
-                                            animate={{ scale: 1, color: '#f3f4f6' }} // Gray-100 fallback
+                                            initial={{ scale: 1.5 }}
+                                            animate={{ scale: 1 }}
                                             transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                                            className="font-bold text-xs"
+                                            className="font-bold text-xs text-brand-primary"
                                         >
                                             {player.score || 0}
                                         </motion.span>
