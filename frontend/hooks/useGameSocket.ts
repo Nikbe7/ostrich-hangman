@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSocket } from '@/hooks/useSocket';
 import { Game } from '@/types/game';
 import { useToast } from '@/components/Toast';
@@ -22,33 +22,41 @@ export function useGameSocket(gameId: string, sessionId: string, name: string) {
         }
     }, [notification]);
 
+    const prevGameRef = useRef<Game | null>(null);
+
+    useEffect(() => {
+        if (!game) return;
+
+        const prev = prevGameRef.current;
+        if (prev) {
+            if (game.status === 'finished' && prev.status === 'playing') {
+                const latestHistory = game.history?.[0];
+                if (latestHistory?.winner) {
+                    setShowConfetti(true);
+                    playWin();
+                    setTimeout(() => setShowConfetti(false), 4000);
+                } else {
+                    playLoss();
+                }
+            } else if (game.status === 'playing' && prev.status === 'playing') {
+                if (game.guessedLetters.length > prev.guessedLetters.length) {
+                    const lastGuess = game.guessedLetters[game.guessedLetters.length - 1];
+                    if (game.word.includes(lastGuess)) {
+                        playCorrect();
+                    } else {
+                        playWrong();
+                    }
+                }
+            }
+        }
+        prevGameRef.current = game;
+    }, [game, playWin, playLoss, playCorrect, playWrong]);
+
     useEffect(() => {
         if (!socket) return;
 
         const handleUpdate = (updatedGame: Game) => {
-            setGame(prev => {
-                if (updatedGame.status === 'finished' && prev?.status === 'playing') {
-                    const latestHistory = updatedGame.history?.[0];
-                    if (latestHistory?.winner) {
-                        setShowConfetti(true);
-                        playWin();
-                        setTimeout(() => setShowConfetti(false), 4000);
-                    } else {
-                        playLoss();
-                    }
-                } else if (prev && updatedGame.status === 'playing') {
-                    // Check if a guess was made
-                    if (updatedGame.guessedLetters.length > prev.guessedLetters.length) {
-                        const lastGuess = updatedGame.guessedLetters[updatedGame.guessedLetters.length - 1];
-                        if (updatedGame.word.includes(lastGuess)) {
-                            playCorrect();
-                        } else {
-                            playWrong();
-                        }
-                    }
-                }
-                return updatedGame;
-            });
+            setGame(updatedGame);
             setError('');
         };
 
