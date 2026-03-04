@@ -131,6 +131,9 @@ async def join_game(sid, data):
             game = game_lobby.get_game(game_id)
             game.add_player(uuid, name, sid)
             
+            # Register in reverse mapping for O(1) counting
+            game_lobby.register_player_game(uuid, game_id)
+            
             # Persist game if authenticated user
             if user:
                 AuthManager.add_game_to_user(uuid, game_id)

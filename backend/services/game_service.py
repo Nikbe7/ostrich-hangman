@@ -353,6 +353,12 @@ class GameLobby:
 
     def __init__(self):
         self.games: Dict[str, GameManager] = {}
+        self.user_games: Dict[str, Set[str]] = {}
+
+    def register_player_game(self, user_id: str, game_id: str):
+        if user_id not in self.user_games:
+            self.user_games[user_id] = set()
+        self.user_games[user_id].add(game_id)
 
     def get_game(self, game_id: str) -> GameManager:
         if game_id not in self.games:
@@ -360,6 +366,10 @@ class GameLobby:
             game = GameManager.load_from_db(game_id)                
             if not game:
                 game = GameManager(game_id)
+            else:
+                # Register loaded players in the reverse mapping
+                for player_id in game.players.keys():
+                    self.register_player_game(player_id, game_id)
             self.games[game_id] = game
         return self.games[game_id]
 
@@ -376,6 +386,12 @@ class GameLobby:
         for game_id in to_remove:
             logger.info("Removing inactive game from memory: %s", game_id)
             if game_id in self.games:
+                # Remove from reverse mapping
+                for player_id in self.games[game_id].players.keys():
+                    if player_id in self.user_games:
+                        self.user_games[player_id].discard(game_id)
+                        if not self.user_games[player_id]:
+                            del self.user_games[player_id]
                 del self.games[game_id]
             # Since DB is persistent, we can leave it in the DB indefinitely,
             # or add logic to delete very old games from Supabase.
@@ -408,11 +424,7 @@ class GameLobby:
 
     def count_games_for_user(self, user_id: str) -> int:
         """Count how many active games in the lobby have the given user as a player."""
-        count = 0
-        for game in self.games.values():
-            if user_id in game.players:
-                count += 1
-        return count
+        return len(self.user_games.get(user_id, set()))
 
 
 # Maximum number of active games an authenticated user can be the creator of

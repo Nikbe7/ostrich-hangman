@@ -65,6 +65,7 @@ def test_count_games_for_user():
     for i in range(3):
         game = lobby.get_game(f"GAME_{i}")
         game.add_player("user1", "User One", f"sid_{i}")
+        lobby.register_player_game("user1", f"GAME_{i}")
 
     assert lobby.count_games_for_user("user1") == 3
     assert lobby.count_games_for_user("user_unknown") == 0
@@ -75,6 +76,7 @@ def test_game_limit_enforced():
     for i in range(MAX_GAMES_PER_USER):
         game = lobby.get_game(f"LIMIT_GAME_{i}")
         game.add_player("limited_user", "Limited", f"sid_{i}")
+        lobby.register_player_game("limited_user", f"LIMIT_GAME_{i}")
 
     count = lobby.count_games_for_user("limited_user")
     assert count >= MAX_GAMES_PER_USER
