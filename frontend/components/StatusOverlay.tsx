@@ -8,6 +8,7 @@ interface StatusOverlayProps {
     notification: string;
     showConfetti: boolean;
     onNewGame: () => void;
+    onCancelStart: () => void;
 }
 
 export default function StatusOverlay({
@@ -16,7 +17,8 @@ export default function StatusOverlay({
     error,
     notification,
     showConfetti,
-    onNewGame
+    onNewGame,
+    onCancelStart
 }: StatusOverlayProps) {
     if (!game) return null;
 
@@ -89,20 +91,38 @@ export default function StatusOverlay({
                 {game.status === 'waiting' && (
                     <div className="status-slide-in inline-flex flex-col items-center gap-2 bg-indigo-500/10 backdrop-blur-xl rounded-xl px-4 py-3 border border-indigo-400/25 shadow-lg shadow-indigo-500/10">
                         <h2 className="text-sm md:text-base font-bold text-indigo-200 tracking-wide text-center">⏳ Väntar på att spelet ska börja...</h2>
-                        <button
-                            onClick={onNewGame}
-                            className="status-bounce bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-2.5 px-8 rounded-xl transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30 w-full md:w-auto mt-1"
-                        >
-                            Starta Spelet
-                        </button>
+                        <div className="relative group w-full md:w-auto mt-1">
+                            <button
+                                onClick={onNewGame}
+                                className="status-bounce bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-2.5 px-8 rounded-xl transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30 w-full md:w-auto"
+                            >
+                                Starta Spelet
+                            </button>
+                            <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                                Du får välja nästa ord
+                            </div>
+                        </div>
                     </div>
                 )}
                 {game.status === 'choosing' && (
                     <div className="status-slide-in">
                         {isMyTurnToChoose ? (
-                            <div className="status-glow-pulse inline-flex items-center gap-1.5 bg-amber-500/15 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-amber-400/40 text-amber-300">
-                                <span className="text-lg">👑</span>
-                                <span className="font-bold text-xs">Din tur att välja ord!</span>
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="status-glow-pulse inline-flex items-center gap-1.5 bg-amber-500/15 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-amber-400/40 text-amber-300">
+                                    <span className="text-lg">👑</span>
+                                    <span className="font-bold text-xs">Din tur att välja ord!</span>
+                                </div>
+                                <div className="relative group w-full flex justify-center mt-1">
+                                    <button
+                                        onClick={() => onCancelStart()}
+                                        className="text-xs text-red-300 hover:text-red-200 underline decoration-red-400/50 underline-offset-2 transition-colors"
+                                    >
+                                        Ångra och gå tillbaka
+                                    </button>
+                                    <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                                        Låt någon annan välja ord
+                                    </div>
+                                </div>
                             </div>
                         ) : (
                             <div className="status-slide-in inline-flex items-center gap-1.5 bg-purple-500/10 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-purple-400/25 text-purple-200 shadow-lg shadow-purple-500/5">
@@ -130,23 +150,33 @@ export default function StatusOverlay({
                                     {game.winnerId === sessionId ? '🏆 Du Vann!' : `🏆 ${game.players.find((p: any) => p.sessionId === game.winnerId)?.name || 'Någon'} Vann!`}
                                 </h2>
                                 <p className="text-xs text-gray-300">Ordet var: <span className="font-bold text-white">{game.word}</span></p>
-                                <button
-                                    onClick={onNewGame}
-                                    className="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-2 px-6 rounded-xl text-sm transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30"
-                                >
-                                    🔄 Nytt Spel
-                                </button>
+                                <div className="relative group mx-auto w-max mt-2">
+                                    <button
+                                        onClick={onNewGame}
+                                        className="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-2 px-6 rounded-xl text-sm transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30 w-full"
+                                    >
+                                        🔄 Nytt Spel
+                                    </button>
+                                    <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                                        Du får välja nästa ord
+                                    </div>
+                                </div>
                             </div>
                         ) : (
                             <div className="backdrop-blur-xl bg-red-500/8 px-5 py-3 rounded-2xl border border-red-400/20 text-red-200 space-y-2 text-sm shadow-lg shadow-red-500/5">
                                 <h2 className="text-lg font-bold">💀 Spelet är slut!</h2>
                                 <p className="text-xs text-gray-300">Ordet var: <span className="font-bold text-white">{game.word}</span></p>
-                                <button
-                                    onClick={onNewGame}
-                                    className="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-2 px-6 rounded-xl text-sm transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30"
-                                >
-                                    🔄 Nytt Spel
-                                </button>
+                                <div className="relative group mx-auto w-max mt-2">
+                                    <button
+                                        onClick={onNewGame}
+                                        className="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-2 px-6 rounded-xl text-sm transition-all transform active:scale-95 shadow-lg shadow-brand-primary/30 w-full"
+                                    >
+                                        🔄 Nytt Spel
+                                    </button>
+                                    <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                                        Du får välja nästa ord
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>

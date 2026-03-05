@@ -199,6 +199,20 @@ async def reset_game(sid, data):
     await sio.emit('update_game', game.get_state_for_frontend(), room=game_id)
 
 @sio.event
+async def cancel_start(sid, data):
+    logger.info("cancel_start: sid=%s, data=%s", sid, data)
+    game_id = data.get('gameId', 'global')
+    
+    session = await sio.get_session(sid)
+    user = session.get('user')
+    uuid = user['id'] if user else data.get('sessionId')
+    
+    if uuid:
+        game = game_lobby.get_game(game_id)
+        game.cancel_start_game(uuid)
+        await sio.emit('update_game', game.get_state_for_frontend(), room=game_id)
+
+@sio.event
 async def disconnect(sid):
     print(f"[DISCONNECT] sid={sid}")
     for game_id, game in game_lobby.games.items():

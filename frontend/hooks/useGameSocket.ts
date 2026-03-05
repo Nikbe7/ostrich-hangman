@@ -110,6 +110,10 @@ export function useGameSocket(gameId: string, sessionId: string, name: string) {
         socket?.emit('reset_game', { gameId, sessionId });
     };
 
+    const cancelStart = () => {
+        socket?.emit('cancel_start', { gameId, sessionId });
+    };
+
     return {
         game,
         isConnected,
@@ -119,6 +123,7 @@ export function useGameSocket(gameId: string, sessionId: string, name: string) {
         guessLetter,
         submitWord,
         resetGame,
+        cancelStart,
         setNotification,
         setError
     };

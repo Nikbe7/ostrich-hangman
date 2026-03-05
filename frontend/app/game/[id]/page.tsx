@@ -57,6 +57,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
         guessLetter,
         submitWord,
         resetGame,
+        cancelStart,
         setNotification
     } = useGameSocket(gameId, sessionId, name);
 
@@ -122,6 +123,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
                 notification={notification}
                 showConfetti={showConfetti}
                 onNewGame={resetGame}
+                onCancelStart={cancelStart}
             />
 
             {/* Mobile Top Bar */}

@@ -34,6 +34,27 @@ async def test_game_choose_word_success():
     assert game.word == "HACKER"
     assert game.status == "playing"
 
+def test_cancel_start_game():
+    game = GameManager("LOBBY1")
+    game.add_player("uuid1", "Player One", "sid1")
+    game.add_player("uuid2", "Player Two", "sid2")
+    
+    # Starts round where uuid1 is choosing
+    game.start_new_round("uuid1")
+    assert game.status == "choosing"
+    assert game.chooser_id == "uuid1"
+    assert game.players["uuid1"]["is_chooser"] is True
+    
+    # Another user cannot cancel
+    game.cancel_start_game("uuid2")
+    assert game.status == "choosing"
+    
+    # The chooser can cancel
+    game.cancel_start_game("uuid1")
+    assert game.status == "waiting"
+    assert game.chooser_id is None
+    assert game.players["uuid1"]["is_chooser"] is False
+
 def test_process_guess():
     game = GameManager("LOBBY1")
     game.add_player("uuid1", "Player One", "sid1")
