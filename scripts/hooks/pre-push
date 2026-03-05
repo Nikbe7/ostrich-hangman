@@ -5,7 +5,7 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
 echo "Running backend tests and coverage (pytest)..."
-cd "$REPO_ROOT" && python -m pytest --cov=backend --cov-fail-under=55 --tb=short -q
+cd "$REPO_ROOT" && python -m pytest --cov=backend --cov-fail-under=75 --tb=short -q
 if [ $? -ne 0 ]; then
     echo ""
     echo "❌ Backend tests or coverage FAILED. Push aborted."
