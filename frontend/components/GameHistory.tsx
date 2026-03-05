@@ -39,7 +39,7 @@ export default function GameHistory({ history, players }: GameHistoryProps) {
                     {entry.word}
                 </span>
                 <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded shrink-0">
-                    {entry.winner ? '🏆 Vinnare' : '💀 Hängd'}
+                    {entry.winner ? `🏆 ${entry.total_guesses ? `${entry.total_guesses} gissningar` : 'Vann'}` : '💀 Hängd'}
                 </span>
             </div>
             <div className="flex justify-between items-end text-[10px] text-gray-400">
