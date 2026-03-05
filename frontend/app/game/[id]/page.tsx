@@ -47,6 +47,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
     const [wordInput, setWordInput] = useState('');
     const [showMobileSidebar, setShowMobileSidebar] = useState(false);
     const [funFactIndex, setFunFactIndex] = useState(0);
+    const [viewingHistory, setViewingHistory] = useState<HistoryEntry | null>(null);
 
     const {
         game,
@@ -95,6 +96,28 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
         }
         return () => clearInterval(interval);
     }, [game?.status]);
+
+    // Clear history view if a new game starts
+    useEffect(() => {
+        if (game?.status === 'waiting' || game?.status === 'choosing') {
+            setViewingHistory(null);
+        }
+    }, [game?.status]);
+
+    const displayGame = React.useMemo(() => {
+        if (!game) return null;
+        if (!viewingHistory) return game;
+        return {
+            ...game,
+            status: 'finished' as const,
+            word: viewingHistory.word,
+            guessedLetters: viewingHistory.guessedLetters || [],
+            wrongGuesses: viewingHistory.wrongGuesses || 0,
+            winnerId: viewingHistory.winner,
+            wordChooser: viewingHistory.chooser || '',
+            guessLog: viewingHistory.guessLog || []
+        };
+    }, [game, viewingHistory]);
 
     const isChooser = game?.players.find(p => p.sessionId === sessionId)?.sessionId === game?.wordChooser;
     const isMyTurnToChoose = game?.wordChooser === sessionId && game?.status === 'choosing';
@@ -177,9 +200,14 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
                 {game && (
                     <div className="flex-1 overflow-hidden flex flex-col gap-3 min-h-0">
-                        <PlayerList players={game.players} currentPlayerId={sessionId} wordChooser={game.wordChooser} />
+                        <PlayerList players={game.players} currentPlayerId={sessionId} wordChooser={displayGame?.wordChooser || game.wordChooser} />
                         {game.history && game.history.length > 0 && (
-                            <GameHistory history={game.history} players={game.players} />
+                            <GameHistory
+                                history={game.history}
+                                players={game.players}
+                                onItemClick={setViewingHistory}
+                                selectedIndex={viewingHistory ? game.history.indexOf(viewingHistory) : -1}
+                            />
                         )}
                     </div>
                 )}
@@ -195,8 +223,16 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
             </aside>
 
             {/* Main Game Area */}
-            <main className="flex-1 min-w-0 p-2 md:p-3">
-                {!game ? (
+            <main className="flex-1 min-w-0 p-2 md:p-3 relative">
+                {viewingHistory && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-brand-primary text-white px-4 py-2 rounded-full font-bold shadow-xl flex items-center gap-3 animate-statusSlideIn border border-white/20">
+                        <span>👁️ Visar historik</span>
+                        <button onClick={() => setViewingHistory(null)} className="bg-black/30 hover:bg-black/50 px-3 py-1 rounded-full text-sm transition-colors">
+                            Tillbaka till aktuellt spel
+                        </button>
+                    </div>
+                )}
+                {!displayGame ? (
                     <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-400">
                         <div className="w-8 h-8 border-4 border-gray-600 border-t-blue-500 rounded-full animate-spin" />
                         <p>{isConnected ? 'Ansluter till spelet...' : 'Ansluter till servern...'}</p>
@@ -206,7 +242,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
                         <div className="game-content-grid">
                             {/* Row 1: Hangman / Choose Word */}
                             <div className="flex items-center justify-center">
-                                {game.status === 'waiting' && (
+                                {displayGame.status === 'waiting' && !viewingHistory && (
                                     <div className="flex flex-col items-center justify-center w-full max-w-sm p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden mt-[130px] mb-4 animate-fadeIn">
                                         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/20 blur-[50px] rounded-full mix-blend-screen pointer-events-none"></div>
                                         <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/20 blur-[50px] rounded-full mix-blend-screen pointer-events-none"></div>
@@ -273,25 +309,25 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
                                         </form>
                                     </div>
                                 )}
-                                {(game.status === 'playing' || game.status === 'finished') && (
+                                {(displayGame.status === 'playing' || displayGame.status === 'finished') && (
                                     <Hangman
-                                        wrongGuesses={game.wrongGuesses}
-                                        status={game.status}
-                                        isWin={game.status === 'finished' && game.winnerId !== null}
+                                        wrongGuesses={displayGame.wrongGuesses}
+                                        status={displayGame.status}
+                                        isWin={displayGame.status === 'finished' && displayGame.winnerId !== null}
                                     />
                                 )}
                             </div>
 
                             {/* Row 2: Word Display */}
-                            {(game.status === 'playing' || game.status === 'finished') && (
+                            {(displayGame.status === 'playing' || displayGame.status === 'finished') && (
                                 <div className="flex items-center justify-center">
-                                    <WordDisplay word={game.word || '______'} guessedLetters={game.guessedLetters || []} status={game.status} />
+                                    <WordDisplay word={displayGame.word || '______'} guessedLetters={displayGame.guessedLetters || []} status={displayGame.status} />
                                 </div>
                             )}
 
                             {/* Row 3: Mobile Guessed Letters – always rendered to prevent layout shift */}
                             <div className="md:hidden flex flex-wrap justify-center gap-1 px-2 min-h-[1.75rem]">
-                                {game && game.guessedLetters && (game.guessLog || game.guessedLetters.map((l: string) => ({ letter: l, correct: game.word?.toUpperCase().includes(l.toUpperCase()), name: '' }))).map((item: any, i: number) => (
+                                {displayGame && displayGame.guessedLetters && (displayGame.guessLog || displayGame.guessedLetters.map((l: string) => ({ letter: l, correct: displayGame.word?.toUpperCase().includes(l.toUpperCase()), name: '' }))).map((item: any, i: number) => (
                                     <span
                                         key={i}
                                         className={`w-6 h-6 flex items-center justify-center rounded-full font-bold text-[10px] ${item.correct ? 'bg-brand-primary text-white border border-brand-primaryHover' : 'bg-brand-danger/80 text-white border border-brand-danger'}`}
@@ -302,12 +338,12 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
                             </div>
 
                             {/* Row 4: Keyboard */}
-                            <div className={`flex items-start justify-center ${hideKeyboard ? 'invisible' : ''}`}>
+                            <div className={`flex items-start justify-center ${hideKeyboard || viewingHistory ? 'invisible' : ''}`}>
                                 <Keyboard
-                                    guessedLetters={game.guessedLetters || []}
+                                    guessedLetters={displayGame.guessedLetters || []}
                                     onGuess={guessLetter}
-                                    disabled={game.status !== 'playing' || hideKeyboard}
-                                    word={game.word || ''}
+                                    disabled={displayGame.status !== 'playing' || hideKeyboard || !!viewingHistory}
+                                    word={displayGame.word || ''}
                                 />
                             </div>
                         </div>
@@ -317,10 +353,10 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
             {/* Right Sidebar - Live Activity Feed */}
             <aside className="game-sidebar-right bg-brand-card/50 backdrop-blur-md p-3 border-l border-white/5 flex flex-col gap-3 z-10 overflow-hidden">
-                {game && (
+                {displayGame && (
                     <>
-                        {game.guessLog && (game.status === 'playing' || game.status === 'finished') ? (
-                            <ActivityFeed guessLog={game.guessLog} />
+                        {displayGame.guessLog && (displayGame.status === 'playing' || displayGame.status === 'finished') ? (
+                            <ActivityFeed guessLog={displayGame.guessLog} />
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-gray-500 opacity-50">
                             </div>

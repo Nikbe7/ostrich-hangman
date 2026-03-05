@@ -16,6 +16,9 @@ export interface HistoryEntry {
     winner: string | null;
     chooser: string | null;
     total_guesses?: number;
+    guessedLetters?: string[];
+    wrongGuesses?: number;
+    guessLog?: GuessLogEntry[];
 }
 
 export interface GuessLogEntry {

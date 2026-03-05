@@ -226,7 +226,10 @@ class GameManager:
                     'word': self.word, 
                     'winner': uuid, 
                     'chooser': self.chooser_id,
-                    'total_guesses': len(self.guessed)
+                    'total_guesses': len(self.guessed),
+                    'guessedLetters': self.guessed.copy(),
+                    'wrongGuesses': self.wrong_guesses,
+                    'guessLog': self.guess_log.copy()
                 })
 
                 current_chooser = self.chooser_id
@@ -247,7 +250,10 @@ class GameManager:
                     'word': self.word, 
                     'winner': None, 
                     'chooser': self.chooser_id,
-                    'total_guesses': len(self.guessed)
+                    'total_guesses': len(self.guessed),
+                    'guessedLetters': self.guessed.copy(),
+                    'wrongGuesses': self.wrong_guesses,
+                    'guessLog': self.guess_log.copy()
                 })
 
     async def choose_word(self, uuid: str, word: str) -> Tuple[bool, str]:
@@ -340,7 +346,7 @@ class GameManager:
         sanitized_history: List[Dict[str, Any]] = []
         for h in self.history:
             if isinstance(h, str):
-                sanitized_history.append({'word': h, 'winner': None, 'chooser': None, 'total_guesses': 0})
+                sanitized_history.append({'word': h, 'winner': None, 'chooser': None, 'total_guesses': 0, 'guessedLetters': [], 'wrongGuesses': 0, 'guessLog': []})
             else:
                 sanitized_history.append(cast(Dict[str, Any], h))
 

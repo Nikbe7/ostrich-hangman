@@ -8,6 +8,9 @@ interface HistoryEntry {
     winner: string | null;
     chooser: string | null;
     total_guesses?: number;
+    guessedLetters?: string[];
+    wrongGuesses?: number;
+    guessLog?: any[];
 }
 
 interface Player {
@@ -18,9 +21,11 @@ interface Player {
 interface GameHistoryProps {
     history: HistoryEntry[];
     players: Player[];
+    onItemClick?: (entry: HistoryEntry) => void;
+    selectedIndex?: number;
 }
 
-export default function GameHistory({ history, players }: GameHistoryProps) {
+export default function GameHistory({ history, players, onItemClick, selectedIndex }: GameHistoryProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     if (!history || history.length === 0) return null;
@@ -32,28 +37,43 @@ export default function GameHistory({ history, players }: GameHistoryProps) {
 
     const hasMore = history.length > 5; // Show button if more than 5, but let the list scroll all of them
 
-    const HistoryItem = ({ entry, i }: { entry: HistoryEntry, i: number }) => (
-        <li key={i} className="flex flex-col p-2 rounded-lg bg-black/30 border border-white/5 hover:border-brand-primary/20 transition-colors text-xs shrink-0">
-            <div className="flex justify-between items-center mb-1">
-                <span className="font-bold tracking-widest uppercase text-white drop-shadow-md">
-                    {entry.word}
-                </span>
-                <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded shrink-0">
-                    {entry.winner ? `🏆 ${entry.total_guesses ? `${entry.total_guesses} gissningar` : 'Vann'}` : '💀 Hängd'}
-                </span>
-            </div>
-            <div className="flex justify-between items-end text-[10px] text-gray-400">
-                <span className="truncate pr-2">
-                    Valt av: <span className="font-medium text-gray-300">{getPlayerName(entry.chooser)}</span>
-                </span>
-                {entry.winner && (
-                    <span className="shrink-0 text-brand-primary font-medium">
-                        {getPlayerName(entry.winner)}
+    const HistoryItem = ({ entry, i }: { entry: HistoryEntry, i: number }) => {
+        const isSelected = selectedIndex === i;
+        const isInteractive = !!onItemClick && !!entry.guessedLetters;
+
+        return (
+            <li
+                key={i}
+                onClick={() => isInteractive && onItemClick(entry)}
+                className={`flex flex-col p-2 rounded-lg transition-colors text-xs shrink-0 
+                    ${isSelected ? 'bg-brand-primary/20 border-brand-primary/50' : 'bg-black/30 border-white/5'} 
+                    ${isInteractive ? 'cursor-pointer hover:border-brand-primary/40 hover:bg-white/5' : ''} 
+                    border`}
+                title={isInteractive ? "Klicka för att se hur spelet såg ut" : ""}
+            >
+                <div className="flex justify-between items-center mb-1">
+                    <span className="font-bold tracking-widest uppercase text-white drop-shadow-md flex items-center gap-2">
+                        {entry.word}
+                        {isInteractive && !isSelected && <span className="text-[10px] opacity-50 group-hover:opacity-100">👁️</span>}
+                        {isSelected && <span className="text-[10px] text-brand-primary">👁️ Visar</span>}
                     </span>
-                )}
-            </div>
-        </li>
-    );
+                    <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded shrink-0">
+                        {entry.winner ? `🏆 ${entry.total_guesses ? `${entry.total_guesses} gissningar` : 'Vann'}` : '💀 Hängd'}
+                    </span>
+                </div>
+                <div className="flex justify-between items-end text-[10px] text-gray-400">
+                    <span className="truncate pr-2">
+                        Valt av: <span className="font-medium text-gray-300">{getPlayerName(entry.chooser)}</span>
+                    </span>
+                    {entry.winner && (
+                        <span className="shrink-0 text-brand-primary font-medium">
+                            {getPlayerName(entry.winner)}
+                        </span>
+                    )}
+                </div>
+            </li>
+        );
+    };
 
     return (
         <>
