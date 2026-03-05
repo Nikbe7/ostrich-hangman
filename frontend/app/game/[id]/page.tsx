@@ -226,7 +226,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
             <main className="flex-1 min-w-0 p-2 md:p-3 relative">
                 {viewingHistory && (
                     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-brand-primary text-white px-4 py-2 rounded-full font-bold shadow-xl flex items-center gap-3 animate-statusSlideIn border border-white/20">
-                        <span>👁️ Visar historik</span>
+                        <span>Visar historik</span>
                         <button onClick={() => setViewingHistory(null)} className="bg-black/30 hover:bg-black/50 px-3 py-1 rounded-full text-sm transition-colors">
                             Tillbaka till aktuellt spel
                         </button>

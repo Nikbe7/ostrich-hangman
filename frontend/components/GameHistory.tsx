@@ -54,8 +54,7 @@ export default function GameHistory({ history, players, onItemClick, selectedInd
                 <div className="flex justify-between items-center mb-1">
                     <span className="font-bold tracking-widest uppercase text-white drop-shadow-md flex items-center gap-2">
                         {entry.word}
-                        {isInteractive && !isSelected && <span className="text-[10px] opacity-50 group-hover:opacity-100">👁️</span>}
-                        {isSelected && <span className="text-[10px] text-brand-primary">👁️ Visar</span>}
+                        {isSelected && <span className="text-[10px] text-brand-primary">Visar</span>}
                     </span>
                     <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded shrink-0">
                         {entry.winner ? `🏆 ${entry.total_guesses ? `${entry.total_guesses} gissningar` : 'Vann'}` : '💀 Hängd'}
