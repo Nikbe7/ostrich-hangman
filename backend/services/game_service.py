@@ -147,6 +147,16 @@ class GameManager:
                 p['last_seen'] = time.time()
                 break
 
+    def remove_player_completely(self, uuid: str):
+        """Fully removes a player from the game session."""
+        if uuid in self.players:
+            # If they were currently choosing, cancel their turn
+            if self.status == 'choosing' and self.chooser_id == uuid:
+                self.cancel_start_game(uuid)
+                
+            del self.players[uuid]
+            self._update_activity()
+
     def start_new_round(self, instigator_id: str):
         self.word = ""
         self.guessed = []

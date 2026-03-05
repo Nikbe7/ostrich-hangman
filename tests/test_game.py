@@ -117,3 +117,25 @@ def test_password_hash_verify_roundtrip():
     # Wrong password should NOT verify
     assert AuthManager._verify_password("WrongPassword", hashed) is False
 
+def test_remove_player_completely():
+    gm = GameManager("test_remove")
+    gm.add_player("player1", "Alice", "sid1")
+    gm.add_player("player2", "Bob", "sid2")
+    
+    # Make player1 the chooser
+    gm.start_new_round("player1")
+    assert gm.status == "choosing"
+    assert gm.chooser_id == "player1"
+    
+    # Remove player2 (not chooser)
+    gm.remove_player_completely("player2")
+    assert "player2" not in gm.players
+    assert "player1" in gm.players
+    assert gm.status == "choosing"
+    
+    # Remove player1 (the chooser)
+    gm.remove_player_completely("player1")
+    assert "player1" not in gm.players
+    assert gm.status == "waiting"
+    assert gm.chooser_id is None
+
