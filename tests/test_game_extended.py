@@ -295,3 +295,95 @@ def test_game_lobby_cleanup_removes_user_mapping():
 
         lobby.cleanup_inactive_games(max_idle_days=1)
         assert "u1" not in lobby.user_games
+
+
+# ── Chooser timeout ────────────────────────────────────────────────────────
+
+def test_chooser_timed_out_false_when_waiting():
+    """chooser_timed_out should be False when status is not 'choosing'."""
+    gm = GameManager("G")
+    gm.status = "waiting"
+    assert gm.chooser_timed_out is False
+
+
+def test_chooser_timed_out_false_before_deadline():
+    """chooser_timed_out should be False if time hasn't elapsed yet."""
+    gm = GameManager("G")
+    gm.add_player("p1", "Alice", "s1")
+    with patch('time.time', return_value=1_000_000.0):
+        gm.start_new_round("p1")
+    # 1 second later — well within 5-minute window
+    with patch('time.time', return_value=1_000_001.0):
+        assert gm.chooser_timed_out is False
+
+
+def test_chooser_timed_out_true_after_deadline():
+    """chooser_timed_out should be True after CHOOSER_TIMEOUT_SECONDS."""
+    gm = GameManager("G")
+    gm.add_player("p1", "Alice", "s1")
+    with patch('time.time', return_value=1_000_000.0):
+        gm.start_new_round("p1")
+    # 5 minutes + 1 second later
+    with patch('time.time', return_value=1_000_000.0 + GameManager.CHOOSER_TIMEOUT_SECONDS + 1):
+        assert gm.chooser_timed_out is True
+
+
+def test_start_new_round_sets_choosing_started_at():
+    """start_new_round should set choosing_started_at."""
+    gm = GameManager("G")
+    gm.add_player("p1", "Alice", "s1")
+    gm.choosing_started_at = None
+    with patch('time.time', return_value=9999.0):
+        gm.start_new_round("p1")
+    assert gm.choosing_started_at == 9999.0
+
+
+def test_cancel_start_clears_choosing_started_at():
+    """cancel_start_game should clear choosing_started_at."""
+    gm = GameManager("G")
+    gm.add_player("p1", "Alice", "s1")
+    gm.start_new_round("p1")
+    gm.cancel_start_game("p1")
+    assert gm.choosing_started_at is None
+    assert gm.status == "waiting"
+
+
+def test_force_cancel_choosing():
+    """force_cancel_choosing should reset state without auth check."""
+    gm = GameManager("G")
+    gm.add_player("p1", "Alice", "s1")
+    gm.start_new_round("p1")
+    assert gm.status == "choosing"
+
+    gm.force_cancel_choosing()
+    assert gm.status == "waiting"
+    assert gm.chooser_id is None
+    assert gm.choosing_started_at is None
+    assert gm.players["p1"]["is_chooser"] is False
+
+
+def test_force_cancel_choosing_no_op_when_not_choosing():
+    """force_cancel_choosing should be a no-op if not in 'choosing' state."""
+    gm = GameManager("G")
+    gm.add_player("p1", "Alice", "s1")
+    gm.status = "waiting"
+    gm.force_cancel_choosing()  # Should not raise or change status
+    assert gm.status == "waiting"
+
+
+def test_choose_word_clears_choosing_started_at():
+    """Successfully choosing a word should clear choosing_started_at."""
+    import asyncio
+
+    async def _run():
+        gm = GameManager("G")
+        gm.add_player("p1", "Alice", "s1")
+        gm.start_new_round("p1")
+        assert gm.choosing_started_at is not None
+        with patch("backend.ai_validator.validate_word_with_ai", return_value=True):
+            success, _ = await gm.choose_word("p1", "HACKER")
+        assert success is True
+        assert gm.choosing_started_at is None
+
+    asyncio.get_event_loop().run_until_complete(_run())
+

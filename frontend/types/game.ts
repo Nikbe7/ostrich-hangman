@@ -40,6 +40,8 @@ export interface Game {
     winnerId: string | null;
     message: string;
     dynamic_ai_status?: string | null;
+    chooserTimedOut?: boolean;
+    chooserDeadline?: number | null;
 }
 
 export interface User {

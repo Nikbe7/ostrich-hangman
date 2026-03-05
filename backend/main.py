@@ -213,6 +213,16 @@ async def cancel_start(sid, data):
         await sio.emit('update_game', game.get_state_for_frontend(), room=game_id)
 
 @sio.event
+async def force_reset(sid, data):
+    """Force reset the game if the word chooser has timed out. Anyone can trigger this."""
+    logger.info("force_reset: sid=%s, data=%s", sid, data)
+    game_id = data.get('gameId', 'global')
+    game = game_lobby.get_game(game_id)
+    if game.chooser_timed_out:
+        game.force_cancel_choosing()
+        await sio.emit('update_game', game.get_state_for_frontend(), room=game_id)
+
+@sio.event
 async def disconnect(sid):
     print(f"[DISCONNECT] sid={sid}")
     for game_id, game in game_lobby.games.items():

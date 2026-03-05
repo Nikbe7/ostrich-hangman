@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Game } from '@/types/game';
+import { useState, useEffect } from 'react';
 
 interface StatusOverlayProps {
     game: Game | null;
@@ -9,6 +10,7 @@ interface StatusOverlayProps {
     showConfetti: boolean;
     onNewGame: () => void;
     onCancelStart: () => void;
+    onForceReset: () => void;
 }
 
 export default function StatusOverlay({
@@ -18,13 +20,33 @@ export default function StatusOverlay({
     notification,
     showConfetti,
     onNewGame,
-    onCancelStart
+    onCancelStart,
+    onForceReset,
 }: StatusOverlayProps) {
     if (!game) return null;
 
     const isMyTurnToChoose = game.wordChooser === sessionId && game.status === 'choosing';
     const chooserName = game.players.find((p: any) => p.sessionId === game.wordChooser)?.name || 'Någon';
     const isChooser = game.players.find((p: any) => p.sessionId === sessionId)?.sessionId === game.wordChooser;
+
+    // Live countdown for the choosing phase
+    const [secsLeft, setSecsLeft] = useState<number | null>(null);
+    useEffect(() => {
+        if (game.status !== 'choosing' || !game.chooserDeadline) {
+            setSecsLeft(null);
+            return;
+        }
+        const update = () => {
+            const remaining = Math.max(0, Math.ceil(game.chooserDeadline! - Date.now() / 1000));
+            setSecsLeft(remaining);
+        };
+        update();
+        const id = setInterval(update, 1000);
+        return () => clearInterval(id);
+    }, [game.status, game.chooserDeadline]);
+
+    const mins = secsLeft != null ? Math.floor(secsLeft / 60) : null;
+    const secs = secsLeft != null ? String(secsLeft % 60).padStart(2, '0') : null;
 
     return (
         <>
@@ -111,6 +133,12 @@ export default function StatusOverlay({
                                 <div className="status-glow-pulse inline-flex items-center gap-1.5 bg-amber-500/15 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-amber-400/40 text-amber-300">
                                     <span className="text-lg">👑</span>
                                     <span className="font-bold text-xs">Din tur att välja ord!</span>
+                                    {secsLeft != null && (
+                                        <span className={`ml-1 text-xs font-mono tabular-nums ${secsLeft < 60 ? 'text-red-300 animate-pulse' : 'text-amber-200/70'
+                                            }`}>
+                                            {mins}:{secs}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="relative group w-full flex justify-center mt-1">
                                     <button
@@ -125,9 +153,27 @@ export default function StatusOverlay({
                                 </div>
                             </div>
                         ) : (
-                            <div className="status-slide-in inline-flex items-center gap-1.5 bg-purple-500/10 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-purple-400/25 text-purple-200 shadow-lg shadow-purple-500/5">
-                                <span>⏳</span>
-                                <span className="text-xs">Väntar på <span className="text-purple-100 font-bold">{chooserName}</span>...</span>
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="status-slide-in inline-flex items-center gap-1.5 bg-purple-500/10 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-purple-400/25 text-purple-200 shadow-lg shadow-purple-500/5">
+                                    <span>⏳</span>
+                                    <span className="text-xs">Väntar på <span className="text-purple-100 font-bold">{chooserName}</span>...</span>
+                                    {secsLeft != null && (
+                                        <span className={`ml-1 text-xs font-mono tabular-nums ${secsLeft < 60 ? 'text-red-300 animate-pulse' : 'text-purple-300/70'
+                                            }`}>
+                                            {mins}:{secs}
+                                        </span>
+                                    )}
+                                </div>
+                                {game.chooserTimedOut && (
+                                    <motion.button
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        onClick={onForceReset}
+                                        className="mt-1 bg-red-500/80 hover:bg-red-500 text-white text-xs font-bold py-1.5 px-4 rounded-lg transition-all shadow-lg shadow-red-500/30 active:scale-95"
+                                    >
+                                        ⚡ Tvinga nytt spel
+                                    </motion.button>
+                                )}
                             </div>
                         )}
                     </div>

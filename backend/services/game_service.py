@@ -60,10 +60,20 @@ class GameManager:
         self.guess_log: List[Dict[str, Any]] = []
         self.dynamic_ai_status: Optional[str] = None
         self.last_activity = time.time()
+        self.choosing_started_at: Optional[float] = None
+
+    CHOOSER_TIMEOUT_SECONDS = 300  # 5 minutes
 
     def _update_activity(self):
         self.last_activity = time.time()
         self.save_to_db()
+
+    @property
+    def chooser_timed_out(self) -> bool:
+        """Returns True if the chooser has not picked a word within the timeout window."""
+        if self.status != 'choosing' or self.choosing_started_at is None:
+            return False
+        return (time.time() - self.choosing_started_at) >= self.CHOOSER_TIMEOUT_SECONDS
 
     def save_to_db(self):
         """Saves current state to Supabase"""
@@ -164,6 +174,7 @@ class GameManager:
         self.winner_id = None
         self.status = 'choosing'
         self.guess_log = []
+        self.choosing_started_at = time.time()
 
         if instigator_id and instigator_id in self.players:
             current_chooser = self.chooser_id
@@ -185,7 +196,19 @@ class GameManager:
         if self.chooser_id and self.chooser_id in self.players:
             self.players[self.chooser_id]['is_chooser'] = False
         self.chooser_id = None
+        self.choosing_started_at = None
         self.message = "Väntar på att spelet ska börja..."
+        self._update_activity()
+
+    def force_cancel_choosing(self):
+        """Resets the chooser state without checking who triggered it (used for timeout)."""
+        if self.status != 'choosing': return
+        if self.chooser_id and self.chooser_id in self.players:
+            self.players[self.chooser_id]['is_chooser'] = False
+        self.chooser_id = None
+        self.choosing_started_at = None
+        self.status = 'waiting'
+        self.message = "Väljaren tog för lång tid — vem som helst kan starta nytt spel!"
         self._update_activity()
 
     def pick_random_word(self):
@@ -333,6 +356,7 @@ class GameManager:
         self.wrong_guesses = 0
         self.status = 'playing'
         self.winner_id = None
+        self.choosing_started_at = None
         self.message = f"{self.players[uuid]['name']} har valt ett ord!"
         return True, "Ord valt!"
 
@@ -372,7 +396,9 @@ class GameManager:
             'guessLog': self.guess_log,
             'winnerId': self.winner_id,
             'message': self.message,
-            'dynamic_ai_status': self.dynamic_ai_status # Added dynamic_ai_status
+            'dynamic_ai_status': self.dynamic_ai_status,
+            'chooserTimedOut': self.chooser_timed_out,
+            'chooserDeadline': (self.choosing_started_at + self.CHOOSER_TIMEOUT_SECONDS) if self.choosing_started_at else None,
         }
 
 

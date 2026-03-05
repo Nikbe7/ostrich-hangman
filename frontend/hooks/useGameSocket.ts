@@ -114,6 +114,10 @@ export function useGameSocket(gameId: string, sessionId: string, name: string) {
         socket?.emit('cancel_start', { gameId, sessionId });
     };
 
+    const forceReset = () => {
+        socket?.emit('force_reset', { gameId, sessionId });
+    };
+
     return {
         game,
         isConnected,
@@ -124,6 +128,7 @@ export function useGameSocket(gameId: string, sessionId: string, name: string) {
         submitWord,
         resetGame,
         cancelStart,
+        forceReset,
         setNotification,
         setError
     };
