@@ -276,9 +276,9 @@ def test_game_lobby_cleanup():
     with patch('time.time', return_value=current_time):
         lobby = GameLobby()
         game = lobby.get_game("OLD")
-        game.last_activity = current_time - (2 * 24 * 3600)  # 2 days idle
+        game.last_activity = current_time - (31 * 24 * 3600)  # 31 days idle
 
-        removed = lobby.cleanup_inactive_games(max_idle_days=1)
+        removed = lobby.cleanup_inactive_games(max_idle_days=30)
         assert removed == 1
         assert "OLD" not in lobby.games
 
@@ -291,9 +291,9 @@ def test_game_lobby_cleanup_removes_user_mapping():
         game = lobby.get_game("OLDGAME")
         game.add_player("u1", "Alice", "s1")
         lobby.register_player_game("u1", "OLDGAME")
-        game.last_activity = current_time - (2 * 24 * 3600)
+        game.last_activity = current_time - (31 * 24 * 3600)
 
-        lobby.cleanup_inactive_games(max_idle_days=1)
+        lobby.cleanup_inactive_games(max_idle_days=30)
         assert "u1" not in lobby.user_games
 
 
