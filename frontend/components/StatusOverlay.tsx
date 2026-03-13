@@ -226,7 +226,6 @@ export default function StatusOverlay({
                         ) : (
                             <div className="backdrop-blur-xl bg-red-500/8 px-5 py-3 rounded-2xl border border-red-400/20 text-red-200 space-y-2 text-sm shadow-lg shadow-red-500/5">
                                 <h2 className="text-lg font-bold">💀 Spelet är slut!</h2>
-                                <p className="text-xs text-gray-300">Ordet var: <span className="font-bold text-white">{game.word}</span></p>
                                 <div className="relative group mx-auto w-max mt-2">
                                     <button
                                         onClick={onNewGame}

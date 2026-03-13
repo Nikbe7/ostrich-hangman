@@ -288,10 +288,11 @@ class GameManager:
                 if self.chooser_id and self.chooser_id in self.players:
                     self.players[self.chooser_id]['score'] += 1
                     
-                self.message = f"Tyvärr! Ordet var {self.word}."
+                self.message = f"Tyvärr! Ordet var inte rätt gissat."
 
+                masked_word = "".join([c if c in self.guessed or c == ' ' else '?' for c in self.word])
                 self.history.insert(0, {
-                    'word': self.word, 
+                    'word': masked_word, 
                     'winner': None, 
                     'chooser': self.chooser_id,
                     'total_guesses': len(self.guessed),
@@ -377,6 +378,8 @@ class GameManager:
             display_word = "".join([c if c in self.guessed or c == ' ' else '_' for c in self.word])
         elif self.status == 'choosing':
             display_word = "VÄLJER..."
+        elif self.status == 'finished' and self.winner_id is None:
+            display_word = "".join([c if c in self.guessed or c == ' ' else '?' for c in self.word])
 
         player_list = []
         for uuid, p in self.players.items():
