@@ -58,10 +58,13 @@ async def validate_word_with_ai(word: str) -> Union[bool, str]:
         return "RATE_LIMITED"
         
     prompt = (
-        f"Du är en expert på det svenska språket och Svenska Akademiens ordlista (SAOL). "
-        f"Är '{word.upper()}' ett riktigt, giltigt svenskt ord (grundform eller vanlig böjning) "
-        f"utan specialtecken som går att hitta i en svensk ordbok, eller är det slang/påhittat?\n\n"
-        f"Svara ENBART med ordet 'JA' eller 'NEJ'. Svara inte med något annat."
+        f"Du är en extremt strikt domare över det svenska språket, med Svenska Akademiens ordlista (SAOL) som främsta riktmärke. "
+        f"Din uppgift är att avgöra om ordet '{word.upper()}' är ett giltigt svenskt ord (grundform eller vanlig böjning). "
+        f"VIKTIGT: Ordet måste tillhöra och användas i det svenska språket. "
+        f"Etablerade lånord som numera anses vara svenska (t.ex. 'SKATEBOARD', 'HACKER', 'JEANS', 'WEEKEND') ÄR GILTIGA och ska godkännas. "
+        f"Däremot ska rent engelska ord som INTE är etablerade i svenskan (t.ex. 'COMPUTER', 'AWESOME', 'BEAUTIFUL') avvisas och få NEJ. "
+        f"Slang som bara används i trånga kretsar, påhittade ord och rena egennamn (förnamn, städer, länder) ska också avvisas. "
+        f"Svara ENBART med ordet 'JA' eller 'NEJ'. Förklara ingenting, skriv inga andra tecken."
     )
     
     try:
