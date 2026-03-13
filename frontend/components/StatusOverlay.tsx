@@ -179,13 +179,28 @@ export default function StatusOverlay({
                     </div>
                 )}
                 {game.status === 'playing' && (
-                    <div className="status-slide-in inline-flex items-center gap-1.5 bg-emerald-500/10 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-emerald-400/25 shadow-lg shadow-emerald-500/5">
-                        <span className="text-xs">
-                            {isChooser
-                                ? <span className="text-emerald-200">De andra spelarna gissar ordet!</span>
-                                : <>Gissa ordet som <span className="font-bold text-amber-300">{chooserName}</span> valde!</>
-                            }
-                        </span>
+                    <div className="status-slide-in flex flex-col items-center gap-2">
+                        <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-emerald-400/25 shadow-lg shadow-emerald-500/5">
+                            <span className="text-xs">
+                                {isChooser
+                                    ? <span className="text-emerald-200">De andra spelarna gissar ordet!</span>
+                                    : <>Gissa ordet som <span className="font-bold text-amber-300">{chooserName}</span> valde!</>
+                                }
+                            </span>
+                        </div>
+                        {isChooser && (game.guessedLetters?.length === 0 || !game.guessedLetters) && (
+                            <div className="relative group w-full flex justify-center mt-1">
+                                <button
+                                    onClick={() => onCancelStart()}
+                                    className="text-xs text-red-300 hover:text-red-200 underline decoration-red-400/50 underline-offset-2 transition-colors"
+                                >
+                                    Ångra ordval
+                                </button>
+                                <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                                    Möjligt innan första gissningen
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
                 {game.status === 'finished' && (

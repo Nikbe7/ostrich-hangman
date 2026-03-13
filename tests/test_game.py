@@ -49,11 +49,30 @@ def test_cancel_start_game():
     game.cancel_start_game("uuid2")
     assert game.status == "choosing"
     
-    # The chooser can cancel
+    # The chooser can cancel while choosing
     game.cancel_start_game("uuid1")
     assert game.status == "waiting"
     assert game.chooser_id is None
     assert game.players["uuid1"]["is_chooser"] is False
+    
+    # Test canceling after word is chosen but before guesses
+    game.start_new_round("uuid1")
+    game.word = "TEST"
+    game.status = "playing"
+    game.guessed = []
+    
+    game.cancel_start_game("uuid1")
+    assert game.status == "waiting"
+    assert game.word == ""
+    
+    # Test cannot cancel after a guess is made
+    game.start_new_round("uuid1")
+    game.word = "TEST"
+    game.status = "playing"
+    game.guessed = ["T"]
+    
+    game.cancel_start_game("uuid1")
+    assert game.status == "playing" # Status should not change
 
 def test_process_guess():
     game = GameManager("LOBBY1")

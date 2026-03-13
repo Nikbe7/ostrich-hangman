@@ -188,13 +188,18 @@ class GameManager:
             self.pick_random_word()
 
     def cancel_start_game(self, instigator_id: str):
-        if self.status != 'choosing': return
+        if self.status not in ['choosing', 'playing']: return
         if self.chooser_id != instigator_id: return
         
+        # Only allow canceling if in choosing or if playing but no guesses made yet
+        if self.status == 'playing' and len(self.guessed) > 0:
+            return
+            
         # Revert back to waiting
         self.status = 'waiting'
         if self.chooser_id and self.chooser_id in self.players:
             self.players[self.chooser_id]['is_chooser'] = False
+        self.word = ""
         self.chooser_id = None
         self.choosing_started_at = None
         self.message = "Väntar på att spelet ska börja..."
