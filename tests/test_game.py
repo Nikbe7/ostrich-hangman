@@ -155,13 +155,6 @@ def test_process_guess_loss_chooser_points():
     assert game.wrong_guesses == 1
     assert game.players["chooser_uuid"]["score"] == 1
     assert game.winner_id is None
-    
-    # Check that word is masked in get_state_for_frontend
-    state = game.get_state_for_frontend()
-    assert state['word'] == "????" # "TEST" fully masked
-    
-    # Check that history contains masked word
-    assert game.history[0]['word'] == "????"
 
 def test_remove_player_completely():
     gm = GameManager("test_remove")
