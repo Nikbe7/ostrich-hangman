@@ -278,7 +278,13 @@ class GameManager:
             self.wrong_guesses += 1
             if self.wrong_guesses >= self.max_wrong:
                 self.status = 'finished'
+                
+                self.winner_id = None
+                if self.chooser_id and self.chooser_id in self.players:
+                    self.players[self.chooser_id]['score'] += 1
+                    
                 self.message = f"Tyvärr! Ordet var {self.word}."
+
                 self.history.insert(0, {
                     'word': self.word, 
                     'winner': None, 

@@ -117,6 +117,26 @@ def test_password_hash_verify_roundtrip():
     # Wrong password should NOT verify
     assert AuthManager._verify_password("WrongPassword", hashed) is False
 
+def test_process_guess_loss_chooser_points():
+    game = GameManager("LOSS1")
+    game.add_player("chooser_uuid", "Chooser", "sid1")
+    game.add_player("guesser_uuid", "Guesser", "sid2")
+    game.word = "TEST"
+    game.status = "playing"
+    game.chooser_id = "chooser_uuid"
+    game.players["chooser_uuid"]["is_chooser"] = True
+    game.max_wrong = 1
+    game.guessed = []
+    
+    assert game.players["chooser_uuid"]["score"] == 0
+    
+    game.process_guess("guesser_uuid", "X")
+    
+    assert game.status == "finished"
+    assert game.wrong_guesses == 1
+    assert game.players["chooser_uuid"]["score"] == 1
+    assert game.winner_id is None
+
 def test_remove_player_completely():
     gm = GameManager("test_remove")
     gm.add_player("player1", "Alice", "sid1")
