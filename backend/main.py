@@ -42,6 +42,8 @@ app.add_middleware(
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "https://ostrich-hangman.vercel.app",
+        "https://ostrich-hangman.se",
+        "https://www.ostrich-hangman.se",
     ],
     allow_credentials=True,
     allow_methods=["*"],
